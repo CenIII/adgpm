@@ -86,13 +86,20 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
-    for outer_iter in range(8):
+    for outer_iter in range(6):
         for i in range(30):
             outs = gcn(word_vectors)
             error = torch.sum((word_vectors[1000:].data-outs[1000:].data)**2)
             print('error: '+str(error))
             word_vectors[1000:]= outs[1000:].data
             if error<1000:
+                tmp_outs = outs.data.clone()
+                tmp_outs[:1000] = fc_vectors.data
+                pred_obj = {
+                    'wnids': wnids,
+                    'pred': tmp_outs
+                }
+                torch.save(pred_obj, osp.join(save_path, 'epoch--' + '.Expt.pred'))
                 break
 
         for epoch in range(1, args.max_epoch + 1):
