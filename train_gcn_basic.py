@@ -131,6 +131,7 @@ if __name__ == '__main__':
 
             # if epoch % args.save_epoch == 0 or epoch==args.max_epoch:
                 save_checkpoint('epoch--') #.format(epoch)
+                break
             
             pred_obj = None
 
