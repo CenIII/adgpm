@@ -87,7 +87,7 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     for outer_iter in range(5):
-        for i in range(10):
+        for i in range(30):
             outs = gcn(word_vectors)
             error = torch.sum((word_vectors[1000:].data-outs[1000:].data)**2)
             print('error: '+str(error))
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             trlog['min_loss'] = min_loss
             torch.save(trlog, osp.join(save_path, 'trlog'))
 
-            if (epoch % args.save_epoch == 0 or epoch==args.max_epoch):
+            if train_loss<0.06:#(epoch % args.save_epoch == 0 or epoch==args.max_epoch):
                 if args.no_pred:
                     pred_obj = None
                 else:
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                         'pred': output_vectors
                     }
 
-            if epoch % args.save_epoch == 0 or epoch==args.max_epoch:
+            # if epoch % args.save_epoch == 0 or epoch==args.max_epoch:
                 save_checkpoint('epoch-{}'.format(epoch))
             
             pred_obj = None
