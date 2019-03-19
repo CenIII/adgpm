@@ -92,7 +92,8 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-        pass
+        word_vectors.data -= 0.001*word_vectors.grad.data
+        word_vectors.grad.data.zero_()
 
         gcn.eval()
         output_vectors = gcn(word_vectors)
