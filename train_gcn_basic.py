@@ -57,7 +57,7 @@ if __name__ == '__main__':
     fc_vectors = torch.tensor(fc_vectors).cuda()
     fc_vectors = F.normalize(fc_vectors)
 
-    word_vectors = torch.randn((32324,2048)).cuda()
+    word_vectors = torch.randn((32324,2049)).cuda()
     # word_vectors = torch.tensor(graph['vectors']).cuda()
     word_vectors = F.normalize(word_vectors)
     word_vectors[:1000] = fc_vectors
