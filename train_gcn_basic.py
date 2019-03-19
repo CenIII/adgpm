@@ -121,7 +121,7 @@ if __name__ == '__main__':
             if args.no_pred:
                 pred_obj = None
             else:
-                output_vectors[:1000] = fc_vectors
+                output_vectors[:1000] = fc_vectors.data
                 pred_obj = {
                     'wnids': wnids,
                     'pred': output_vectors
