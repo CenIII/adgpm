@@ -14,7 +14,7 @@ def ensure_path(path):
     #         os.mkdir(path)
     # else:
     #     os.mkdir(path)
-    os.mkdirs(path,exist_ok=True)
+    os.makedirs(path,exist_ok=True)
 
 def set_gpu(gpu):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu
