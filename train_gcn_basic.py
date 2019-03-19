@@ -120,7 +120,7 @@ if __name__ == '__main__':
             trlog['min_loss'] = min_loss
             torch.save(trlog, osp.join(save_path, 'trlog'))
 
-            if train_loss<0.06:#(epoch % args.save_epoch == 0 or epoch==args.max_epoch):
+            if train_loss<0.08:#(epoch % args.save_epoch == 0 or epoch==args.max_epoch):
                 if args.no_pred:
                     pred_obj = None
                 else:
