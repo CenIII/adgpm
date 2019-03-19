@@ -86,7 +86,7 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
-    for outer_iter in range(5):
+    for outer_iter in range(8):
         for i in range(30):
             outs = gcn(word_vectors)
             error = torch.sum((word_vectors[1000:].data-outs[1000:].data)**2)
