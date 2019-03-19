@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--trainval', default='10,0')
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--weight-decay', type=float, default=0.0005)
-    parser.add_argument('--save-epoch', type=int, default=300)
+    parser.add_argument('--save-epoch', type=int, default=3000)
     parser.add_argument('--save-path', default='save/gcn-basic')
 
     parser.add_argument('--gpu', default='0')
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     edges = edges + [(u, u) for u in range(n)]
 
     random.shuffle(graph['vectors'])
-    
+
     word_vectors = torch.tensor(graph['vectors']).cuda()
     word_vectors = F.normalize(word_vectors)
 
@@ -86,6 +86,7 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
+    wv_lr = 0.01
     for epoch in range(1, args.max_epoch + 1):
         gcn.train()
         output_vectors = gcn(word_vectors)
@@ -94,7 +95,9 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-        word_vectors.data -= 0.001*word_vectors.grad.data
+        if epoch == 3000:
+            wv_lr = 0.001
+        word_vectors.data -= wv_lr*word_vectors.grad.data
         word_vectors.grad.data.zero_()
 
         gcn.eval()
