@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--gpu', default='0')
 
-    parser.add_argument('--keep-ratio', type=float, default=0.1)
+    parser.add_argument('--keep-ratio', type=float, default=1)
     parser.add_argument('--consider-trains', action='store_true')
     parser.add_argument('--test-train', action='store_true')
 
@@ -115,6 +115,7 @@ if __name__ == '__main__':
                       .format(hits[i] / tot * 100, s_hits[i] / s_tot * 100), end=' ')
             print('x{}({})'.format(tot, s_tot))
     else:
+        count = 0
         for i, wnid in enumerate(test_wnids, 1):
             subset = dataset.get_subset(wnid)
             hits, tot = test_on_subset(subset, cnn, n, pred_vectors, n + i - 1,

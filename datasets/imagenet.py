@@ -52,7 +52,12 @@ class ImageNetSubset(Dataset):
                 return pil_loader(path)
 
         # get file list
-        all_files = os.listdir(path)
+        try:
+            all_files = os.listdir(path)
+        except:
+            print(path+" does not exist.")
+            self.data=[]
+            return
         files = []
         for f in all_files:
             if f.endswith('.JPEG'):
