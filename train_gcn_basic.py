@@ -5,6 +5,7 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 from utils import ensure_path, set_gpu, l2_loss
 from models.gcn import GCN
