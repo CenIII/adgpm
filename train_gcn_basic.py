@@ -89,9 +89,9 @@ if __name__ == '__main__':
     for outer_iter in range(5):
         for i in range(10):
             outs = gcn(word_vectors)
-            error = torch.sum((word_vectors[1000:]-outs[1000:])**2)
+            error = torch.sum((word_vectors[1000:].data-outs[1000:].data)**2)
             print('error: '+str(error))
-            word_vectors[1000:] = outs[1000:]
+            word_vectors[1000:].data = outs[1000:].data
             if error<1000:
                 break
 

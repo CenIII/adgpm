@@ -8,12 +8,7 @@ import torch
 
 
 def ensure_path(path):
-    if osp.exists(path):
-        if input('{} exists, remove? ([y]/n)'.format(path)) != 'n':
-            shutil.rmtree(path)
-            os.mkdir(path)
-    else:
-        os.mkdir(path)
+    os.makedirs(path, exist_ok=True)
 
 
 def set_gpu(gpu):
