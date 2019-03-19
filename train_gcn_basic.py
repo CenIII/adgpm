@@ -50,6 +50,8 @@ if __name__ == '__main__':
     word_vectors = torch.tensor(graph['vectors']).cuda()
     word_vectors = F.normalize(word_vectors)
 
+    word_vectors =Variable(word_vectors, requires_grad=True)
+
     fcfile = json.load(open('materials/fc-weights.json', 'r'))
     train_wnids = [x[0] for x in fcfile]
     fc_vectors = [x[1] for x in fcfile]
@@ -88,6 +90,8 @@ if __name__ == '__main__':
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        pass
 
         gcn.eval()
         output_vectors = gcn(word_vectors)
