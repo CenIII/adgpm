@@ -25,18 +25,17 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
     loader = DataLoader(dataset=dataset, batch_size=32,
                         shuffle=False, num_workers=2)
 
-    count = 0
+    # count = 0
+    feat_all = []
     for batch_id, batch in enumerate(loader, 1):
         data, label = batch 
         data = data.cuda()
 
         feat = cnn(data) # (batch_size, d)
         feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
-
-        feat_np = feat.data.cpu().numpy()
-        for i in range(feat_np.shape[0]):
-            count += 1
-            np.save(osp.join(subset_path, str(count)+'.npy'),feat_np[i])
+        feat_all.append(feat)
+    feat_np = torch.cat(feat_all,dim=0).data.cpu().numpy()
+    np.save(osp.join(subset_path, 'feats.npy'),feat_np)
     tot = 10        
 
         # fcs = pred_vectors.t()
