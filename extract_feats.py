@@ -33,8 +33,8 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
 
         feat = cnn(data) # (batch_size, d)
         feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
-        feat_all.append(feat)
-    feat_np = torch.cat(feat_all,dim=0).data.cpu().numpy()
+        feat_all.append(feat.data.cpu().numpy())
+    feat_np = np.concatenate(feat_all,axis=0)
     np.save(osp.join(subset_path, 'feats.npy'),feat_np)
     tot = 10        
 
