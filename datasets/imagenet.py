@@ -9,85 +9,82 @@ import torchvision.transforms as transforms
 
 from PIL import Image
 from torchvision import get_image_backend
+import numpy as np
 
 
-class ImageNet():
+class ImageNetFeats():
 
     def __init__(self, path):
         self.path = path
         self.keep_ratio = 1.0
+        self.wnid_list = os.listdir(self.path)
     
     def get_subset(self, wnid):
-        path = osp.join(self.path, wnid)
-        return ImageNetSubset(path, wnid, keep_ratio=self.keep_ratio)
+        if wnid not in self.wnid_list:
+            print("Subset "+str(wnid)+" not exist.")
+            return None
+
+        path = osp.join(osp.join(self.path, wnid),'feats.npy')
+        feats = np.load(path)
+        keeplen = max(int(len(feats)*self.keep_ratio),1)
+        feats = feats[:keeplen]
+        feats = torch.tensor(feats)
+        return feats #ImageNetFeatsSubset(path, wnid, keep_ratio=self.keep_ratio)
 
     def set_keep_ratio(self, r):
         self.keep_ratio = r
 
 
-class ImageNetSubset(Dataset):
+# class ImageNetFeatsSubset(Dataset):
 
-    def __init__(self, path, wnid, keep_ratio=1.0):
-        self.wnid = wnid
+#     def __init__(self, path, wnid, keep_ratio=1.0):
+#         self.wnid = wnid
 
-        def pil_loader(path):
-            with open(path, 'rb') as f:
-                try:
-                    img = Image.open(f)
-                except OSError:
-                    return None
-                return img.convert('RGB')
+#         def default_loader(path):
+#             try:
+#                 img = np.load(f) #Image.open(f)
+#             except OSError:
+#                 return None
+#             return img#.convert('RGB')
 
-        def accimage_loader(path):
-            import accimage
-            try:
-                return accimage.Image(path)
-            except IOError:
-                return pil_loader(path)
+#         # get file list
+#         try:
+#             all_files = os.listdir(path)
+#         except:
+#             print(path+" does not exist.")
+#             self.data=[]
+#             return
+#         files = []
+#         for f in all_files:
+#             if f.endswith('.npy'):
+#                 files.append(f)
+#         random.shuffle(files)
+#         files = files[:max(1, round(len(files) * keep_ratio))]
 
-        def default_loader(path):
-            if get_image_backend() == 'accimage':
-                return accimage_loader(path)
-            else:
-                return pil_loader(path)
+#         # read images
+#         data = []
+#         for filename in files:
+#             image = default_loader(osp.join(path, filename))
+#             if image is None:
+#                 continue
+#             # pytorch model-zoo pre-process
+#             # preprocess = transforms.Compose([
+#             #     transforms.Resize(256),
+#             #     transforms.CenterCrop(224),
+#             #     transforms.ToTensor(),
+#             #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#             #                          std=[0.229, 0.224, 0.225])
+#             # ])
+#             # data.append(preprocess(image))
+#             data.append(image)
+#         if data != []:
+#             self.data = torch.stack(data) 
+#         else:
+#             self.data = []
 
-        # get file list
-        try:
-            all_files = os.listdir(path)
-        except:
-            print(path+" does not exist.")
-            self.data=[]
-            return
-        files = []
-        for f in all_files:
-            if f.endswith('.JPEG'):
-                files.append(f)
-        random.shuffle(files)
-        files = files[:max(1, round(len(files) * keep_ratio))]
+#     def __len__(self):
+#         return len(self.data)
 
-        # read images
-        data = []
-        for filename in files:
-            image = default_loader(osp.join(path, filename))
-            if image is None:
-                continue
-            # pytorch model-zoo pre-process
-            preprocess = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-            ])
-            data.append(preprocess(image))
-        if data != []:
-            self.data = torch.stack(data) 
-        else:
-            self.data = []
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx], self.wnid
+#     def __getitem__(self, idx):
+#         return self.data[idx], self.wnid
 
