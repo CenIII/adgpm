@@ -26,7 +26,8 @@ class ImageNetFeats():
 
         path = osp.join(osp.join(self.path, wnid),'feats.npy')
         feats = np.load(path)
-        feats = feats[:int(len(feats)*self.keep_ratio)]
+        keeplen = max(int(len(feats)*self.keep_ratio),1)
+        feats = feats[:keeplen]
         feats = torch.tensor(feats)
         return feats #ImageNetFeatsSubset(path, wnid, keep_ratio=self.keep_ratio)
 
