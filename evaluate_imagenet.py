@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.resnet import make_resnet50_base
-from datasets.imagenet import ImageNet
+from datasets.imagenet import ImageNetFeats
 from utils import set_gpu, pick_vectors
 
 
@@ -17,30 +17,30 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
     hits = torch.zeros(len(top)).cuda()
     tot = 0
 
-    loader = DataLoader(dataset=dataset, batch_size=32,
-                        shuffle=False, num_workers=2)
+    # loader = DataLoader(dataset=dataset, batch_size=32,
+    #                     shuffle=False, num_workers=2)
 
-    for batch_id, batch in enumerate(loader, 1):
-        data, label = batch 
-        data = data.cuda()
+    # for batch_id, batch in enumerate(loader, 1):
+        # data, label = batch 
+    data = dataset.cuda()
 
-        feat = data #cnn(data) # (batch_size, d)
-        # feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
+    feat = data #cnn(data) # (batch_size, d)
+    # feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
 
-        fcs = pred_vectors.t()
+    fcs = pred_vectors.t()
 
-        table = torch.matmul(feat, fcs)
-        if not consider_trains:
-            table[:, :n] = -1e18
+    table = torch.matmul(feat, fcs)
+    if not consider_trains:
+        table[:, :n] = -1e18
 
-        gth_score = table[:, all_label].repeat(table.shape[1], 1).t()
-        rks = (table >= gth_score).sum(dim=1)
+    gth_score = table[:, all_label].repeat(table.shape[1], 1).t()
+    rks = (table >= gth_score).sum(dim=1)
 
-        assert (table[:, all_label] == gth_score[:, all_label]).min() == 1
+    assert (table[:, all_label] == gth_score[:, all_label]).min() == 1
 
-        for i, k in enumerate(top):
-            hits[i] += (rks <= k).sum().item()
-        tot += len(data)
+    for i, k in enumerate(top):
+        hits[i] += (rks <= k).sum().item()
+    tot += len(data)
 
     return hits, tot
 
@@ -90,8 +90,8 @@ if __name__ == '__main__':
 
     TEST_TRAIN = args.test_train
 
-    imagenet_path = 'materials/datasets/imagenet'
-    dataset = ImageNet(imagenet_path)
+    imagenet_path = 'materials/datasets/imagenet_feats'
+    dataset = ImageNetFeats(imagenet_path)
     dataset.set_keep_ratio(args.keep_ratio)
 
     s_hits = torch.FloatTensor([0, 0, 0, 0, 0]).cuda() # top 1 2 5 10 20
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     if TEST_TRAIN:
         for i, wnid in enumerate(train_wnids, 1):
-            subset = dataset.get_subset(wnid)
+            subset = dataset.get_subset(wnid)  # return truncated matrix
             hits, tot = test_on_subset(subset, cnn, n, pred_vectors, i - 1,
                                        consider_trains=args.consider_trains)
             results[wnid] = (hits / tot).tolist()
