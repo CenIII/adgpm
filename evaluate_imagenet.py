@@ -24,8 +24,8 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
         data, label = batch 
         data = data.cuda()
 
-        feat = cnn(data) # (batch_size, d)
-        feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
+        feat = data #cnn(data) # (batch_size, d)
+        # feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
 
         fcs = pred_vectors.t()
 
