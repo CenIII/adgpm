@@ -24,7 +24,7 @@ class ImageNetFeats():
             print("Subset "+str(wnid)+" not exist.")
             return None
 
-        path = osp.join(self.path, wnid)
+        path = osp.join(osp.join(self.path, wnid),'feats.npy')
         feats = np.load(path)
         feats = feats[:int(len(feats)*self.keep_ratio)]
         feats = torch.tensor(feats)
