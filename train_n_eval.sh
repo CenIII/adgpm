@@ -38,7 +38,6 @@ save_prefix='./save/EMFSaA'
 for i in "${num_list[@]}"; do
 	python train_gcn_basic.py --save-path $save_prefix$i --max-epoch 5000 --save-epoch 3000 > $save_prefix$i'/train_log'
 done
-python train_gcn_basic.py --save-path save/EMFSaA0 --max-epoch 5000 --save-epoch 3000 > ./save/EMFSaA0/train_log
 
 ## Deep
 # original
