@@ -41,13 +41,13 @@ class GraphConv(nn.Module):
 
 class GCN(nn.Module):
 
-    def __init__(self, n, edges, in_channels, out_channels, hidden_layers):
+    def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in'):
         super().__init__()
 
         edges = np.array(edges)
         adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
                             shape=(n, n), dtype='float32')
-        adj = normt_spm(adj, method='in')
+        adj = normt_spm(adj, method=norm_method)
         adj = spm_to_tensor(adj)
         self.adj = adj.cuda()
 
