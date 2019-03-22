@@ -74,7 +74,7 @@ if __name__ == '__main__':
     print('num train: {}, num val: {}'.format(n_train, n_trainval - n_train))
     tlist = list(range(len(fc_vectors)))
     random.shuffle(tlist)
-
+    
     min_loss = 1e18
 
     trlog = {}
