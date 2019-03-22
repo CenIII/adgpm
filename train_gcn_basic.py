@@ -48,6 +48,8 @@ if __name__ == '__main__':
     edges = edges + [(v, u) for (u, v) in edges]
     edges = edges + [(u, u) for u in range(n)]
 
+    random.shuffle(graph['vectors'])
+    
     word_vectors = torch.tensor(graph['vectors']).cuda()
     word_vectors = F.normalize(word_vectors)
 
