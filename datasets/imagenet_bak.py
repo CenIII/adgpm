@@ -30,31 +30,26 @@ class ImageNetSubset(Dataset):
     def __init__(self, path, wnid, keep_ratio=1.0):
         self.wnid = wnid
 
-        # def pil_loader(path):
-        #     # with open(path, 'rb') as f:
-        #     try:
-        #         img = np.load(f) #Image.open(f)
-        #     except OSError:
-        #         return None
-        #     return img#.convert('RGB')
+        def pil_loader(path):
+            with open(path, 'rb') as f:
+                try:
+                    img = Image.open(f)
+                except OSError:
+                    return None
+                return img.convert('RGB')
 
-        # def accimage_loader(path):
-        #     import accimage
-        #     try:
-        #         return accimage.Image(path)
-        #     except IOError:
-        #         return pil_loader(path)
+        def accimage_loader(path):
+            import accimage
+            try:
+                return accimage.Image(path)
+            except IOError:
+                return pil_loader(path)
 
         def default_loader(path):
-            try:
-                img = np.load(f) #Image.open(f)
-            except OSError:
-                return None
-            return img#.convert('RGB')
-            # if get_image_backend() == 'accimage':
-            #     return accimage_loader(path)
-            # else:
-            #     return pil_loader(path)
+            if get_image_backend() == 'accimage':
+                return accimage_loader(path)
+            else:
+                return pil_loader(path)
 
         # get file list
         try:
@@ -65,7 +60,7 @@ class ImageNetSubset(Dataset):
             return
         files = []
         for f in all_files:
-            if f.endswith('.npy'):
+            if f.endswith('.JPEG'):
                 files.append(f)
         random.shuffle(files)
         files = files[:max(1, round(len(files) * keep_ratio))]
@@ -77,15 +72,14 @@ class ImageNetSubset(Dataset):
             if image is None:
                 continue
             # pytorch model-zoo pre-process
-            # preprocess = transforms.Compose([
-            #     transforms.Resize(256),
-            #     transforms.CenterCrop(224),
-            #     transforms.ToTensor(),
-            #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-            #                          std=[0.229, 0.224, 0.225])
-            # ])
-            # data.append(preprocess(image))
-            data.append(image)
+            preprocess = transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+            ])
+            data.append(preprocess(image))
         if data != []:
             self.data = torch.stack(data) 
         else:
