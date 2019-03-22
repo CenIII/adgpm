@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', default='0')
 
     parser.add_argument('--no-pred', action='store_true')
+    parser.add_argument('--layers', default='d2048,d')
     args = parser.parse_args()
 
     set_gpu(args.gpu)
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     fc_vectors = torch.tensor(fc_vectors).cuda()
     fc_vectors = F.normalize(fc_vectors)
 
-    hidden_layers = 'd2048,d'
+    hidden_layers = args.layers
     gcn = GCN(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers).cuda()
 
     print('{} nodes, {} edges'.format(n, len(edges)))
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         trlog['min_loss'] = min_loss
         torch.save(trlog, osp.join(save_path, 'trlog'))
 
-        if (epoch % args.save_epoch == 0):
+        if (epoch == args.save_epoch):
             if args.no_pred:
                 pred_obj = None
             else:
@@ -127,8 +128,9 @@ if __name__ == '__main__':
                     'pred': output_vectors
                 }
 
-        if epoch % args.save_epoch == 0:
+        if epoch == args.save_epoch:
             save_checkpoint('epoch-{}'.format(epoch))
+            break
         
         pred_obj = None
 
