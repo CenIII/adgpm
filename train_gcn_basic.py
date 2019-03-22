@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', default='0')
 
     parser.add_argument('--no-pred', action='store_true')
+    parser.add_argument('--layers', default='d2048,d')
     args = parser.parse_args()
 
     set_gpu(args.gpu)
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     word_vectors = F.normalize(word_vectors)
     word_vectors[:1000] = fc_vectors
 
-    hidden_layers = 'd2048,d'
+    hidden_layers = args.layers
     gcn = GCN(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers).cuda()
 
     print('{} nodes, {} edges'.format(n, len(edges)))
