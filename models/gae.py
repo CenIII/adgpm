@@ -159,7 +159,7 @@ class GAE(nn.Module):
         return A_pred, x_pred
 
 
-class GAECrit(object):
+class GAECrit(nn.Module):
     """docstring for GAECrit"""
     def __init__(self,pos_weight,norm):
         super(GAECrit, self).__init__()
