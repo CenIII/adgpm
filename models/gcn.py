@@ -200,10 +200,10 @@ class GCN(nn.Module):
             i += 1
             # att layer
             self.attentions = [SpGraphAttentionLayer(300, 
-                                                 2049, 
+                                                 300, 
                                                  dropout=0.5, 
                                                  alpha=0.2, 
-                                                 concat=True) for _ in range(1)]
+                                                 concat=True) for _ in range(2)]
             for i, attention in enumerate(self.attentions):
                 self.add_module('attention_{}'.format(i), attention)
 
@@ -211,25 +211,20 @@ class GCN(nn.Module):
             # self.add_module('conv{}'.format(i), conv)
             # layers.append(conv)
 
-            last_c = c
+            # last_c = c
 
-        self.out_att = SpGraphAttentionLayer(300, 
-                                             2049, 
-                                             dropout=0.5, 
-                                             alpha=0.2, 
-                                             concat=False)
-        # conv = GraphConv(last_c, out_channels, relu=False, dropout=dropout_last)
-        # self.add_module('conv-last', conv)
-        # layers.append(conv)
+        conv = GraphConv(2*last_c, out_channels, relu=False, dropout=dropout_last)
+        self.add_module('conv-last', conv)
+        layers.append(conv)
 
         # self.layers = layers
 
     def forward(self, x):
-        # x = F.dropout(x, 0.5, training=self.training)
-        # x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
         x = F.dropout(x, 0.5, training=self.training)
-        x = self.out_att(x, self.raw_adj)
-        # for conv in self.layers:
-        #     x = conv(x, self.adj)
+        x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
+        # x = F.dropout(x, 0.5, training=self.training)
+        # x = self.out_att(x, self.raw_adj)
+        for conv in self.layers:
+            x = conv(x, self.adj)
         return F.normalize(x)
 
