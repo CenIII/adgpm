@@ -91,9 +91,9 @@ if __name__ == '__main__':
         # indices = torch.LongTensor([0, 2])
         key_wvs = torch.index_select(wv, 0, neigbors)
         values = torch.index_select(output, 0, neigbors)
-        att_vec = torch.mult(query_wv,key_wvs)
-        att_vec = torch.softmax(att_vec)
-        return torch.mult(values,att_vec)
+        att_vec = torch.matmul(key_wvs,query_wv)
+        att_vec = torch.softmax(att_vec,0)
+        return torch.matmul(values.t(),att_vec)
 
     # build neigbor dict
     adj = gcn.adj
