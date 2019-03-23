@@ -122,7 +122,7 @@ class GAE(nn.Module):
         self.pos_indices_list = list(self.adj._indices().t().data.numpy())
         self.pos_indices = {}
         for ind in self.pos_indices_list:
-            self.pos_indices[list(ind)] = 1
+            self.pos_indices[tuple(list(ind))] = 1
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
         # self.wt_mat = wt_mat
