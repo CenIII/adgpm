@@ -220,9 +220,9 @@ class GCN(nn.Module):
                                              concat=False)
         # conv = GraphConv(last_c, out_channels, relu=False, dropout=dropout_last)
         # self.add_module('conv-last', conv)
-        layers.append(conv)
+        # layers.append(conv)
 
-        self.layers = layers
+        # self.layers = layers
 
     def forward(self, x):
         x = F.dropout(x, 0.5, training=self.training)
