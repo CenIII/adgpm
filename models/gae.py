@@ -154,7 +154,7 @@ class GAE(nn.Module):
                 rand_inds.append(ind)
 
         self.rand_inds = np.array(rand_inds).transpose()
-        A_pred = self.decoderA(z,rand_inds)
+        A_pred = self.decoderA(z,self.rand_inds)
         x_pred = self.decoderX(z)
         return A_pred, x_pred
 
