@@ -217,7 +217,7 @@ class GCN(nn.Module):
         self.add_module('conv-last', conv)
         layers.append(conv)
 
-        # self.layers = layers
+        self.layers = layers
 
     def forward(self, x):
         x = F.dropout(x, 0.5, training=self.training)
