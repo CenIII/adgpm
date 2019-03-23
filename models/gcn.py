@@ -200,10 +200,10 @@ class GCN(nn.Module):
             i += 1
             # att layer
             self.attentions = [SpGraphAttentionLayer(300, 
-                                                 1024, 
+                                                 2049, 
                                                  dropout=0.5, 
                                                  alpha=0.2, 
-                                                 concat=True) for _ in range(2)]
+                                                 concat=True) for _ in range(1)]
             for i, attention in enumerate(self.attentions):
                 self.add_module('attention_{}'.format(i), attention)
 
@@ -213,7 +213,7 @@ class GCN(nn.Module):
 
             last_c = c
 
-        self.out_att = SpGraphAttentionLayer(1024 * 2, 
+        self.out_att = SpGraphAttentionLayer(2049, 
                                              2049, 
                                              dropout=0.5, 
                                              alpha=0.2, 
