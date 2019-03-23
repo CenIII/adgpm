@@ -200,21 +200,26 @@ class GCN(nn.Module):
             i += 1
             # att layer
             self.attentions = [SpGraphAttentionLayer(300, 
-                                                 300, 
+                                                 1024, 
                                                  dropout=0.5, 
                                                  alpha=0.2, 
                                                  concat=True) for _ in range(2)]
             for i, attention in enumerate(self.attentions):
                 self.add_module('attention_{}'.format(i), attention)
 
-            conv = GraphConv(2*last_c, c, dropout=dropout)
-            self.add_module('conv{}'.format(i), conv)
-            layers.append(conv)
+            # conv = GraphConv(2*last_c, c, dropout=dropout)
+            # self.add_module('conv{}'.format(i), conv)
+            # layers.append(conv)
 
             last_c = c
 
-        conv = GraphConv(last_c, out_channels, relu=False, dropout=dropout_last)
-        self.add_module('conv-last', conv)
+        self.out_att = SpGraphAttentionLayer(1024 * 2, 
+                                             2049, 
+                                             dropout=0.5, 
+                                             alpha=0.2, 
+                                             concat=False)
+        # conv = GraphConv(last_c, out_channels, relu=False, dropout=dropout_last)
+        # self.add_module('conv-last', conv)
         layers.append(conv)
 
         self.layers = layers
@@ -222,7 +227,9 @@ class GCN(nn.Module):
     def forward(self, x):
         x = F.dropout(x, 0.5, training=self.training)
         x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
-        for conv in self.layers:
-            x = conv(x, self.adj)
+        x = F.dropout(x, 0.5, training=self.training)
+        x = self.out_att(x, self.raw_adj)
+        # for conv in self.layers:
+        #     x = conv(x, self.adj)
         return F.normalize(x)
 
