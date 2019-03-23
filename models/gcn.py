@@ -213,7 +213,7 @@ class GCN(nn.Module):
 
             last_c = c
 
-        self.out_att = SpGraphAttentionLayer(2049, 
+        self.out_att = SpGraphAttentionLayer(300, 
                                              2049, 
                                              dropout=0.5, 
                                              alpha=0.2, 
@@ -225,8 +225,8 @@ class GCN(nn.Module):
         # self.layers = layers
 
     def forward(self, x):
-        x = F.dropout(x, 0.5, training=self.training)
-        x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
+        # x = F.dropout(x, 0.5, training=self.training)
+        # x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
         x = F.dropout(x, 0.5, training=self.training)
         x = self.out_att(x, self.raw_adj)
         # for conv in self.layers:
