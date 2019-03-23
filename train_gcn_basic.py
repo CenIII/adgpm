@@ -110,9 +110,12 @@ if __name__ == '__main__':
 
 
     for epoch in range(1, args.max_epoch + 1):
+        tmp = output_vectors.clone()
         for i in range(1000,n):
             output_vectors[i] = getMeanVec(output_vectors,i,neib_dict,word_vectors)
 
+        error = torch.sum((tmp - output_vectors)**2).data.cpu()
+        print('epoch: '+str(epoch)+' error: '+str(error))
         # gcn.train()
         # output_vectors = gcn(word_vectors)
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
