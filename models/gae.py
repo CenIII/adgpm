@@ -148,7 +148,7 @@ class GAE(nn.Module):
         
         rand_inds.append(self.pos_indices_list[pos_sample])
         for i in range(29997):
-            ind = tupe(list(np.random.choice(32324, 2)))
+            ind = tuple(list(np.random.choice(32324, 2)))
             if ind not in self.pos_indices:
                 rand_inds.append(ind)
 
