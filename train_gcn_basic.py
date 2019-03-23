@@ -149,9 +149,9 @@ if __name__ == '__main__':
                     'pred': output_vectors
                 }
 
-        # if epoch == args.save_epoch:
-        #     save_checkpoint('epoch-{}'.format(epoch))
-        #     break
+        if epoch == args.save_epoch:
+            save_checkpoint('epoch-{}'.format(epoch))
+            break
         
         pred_obj = None
 
