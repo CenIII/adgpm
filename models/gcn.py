@@ -198,8 +198,8 @@ class GCN(nn.Module):
             # att layer
             self.attentions = [SpGraphAttentionLayer(300, 
                                                  300, 
-                                                 dropout=dropout, 
-                                                 alpha=alpha, 
+                                                 dropout=0.5, 
+                                                 alpha=0.2, 
                                                  concat=True) for _ in range(2)]
             for i, attention in enumerate(self.attentions):
                 self.add_module('attention_{}'.format(i), attention)
