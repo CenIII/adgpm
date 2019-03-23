@@ -96,11 +96,12 @@ class InnerProductDecoder(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.fudge = 1e-7
 
-
-    def forward(self, z):
-        z = F.dropout(z, self.dropout, training=self.training)
-        adj = (self.sigmoid(torch.mm(z, z.t())) + self.fudge) * (1 - 2 * self.fudge)
-        return adj
+ 
+    def forward(self, z, rand_inds):  # 30000 inds
+        # z = F.dropout(z, self.dropout, training=self.training)
+        return (self.sigmoid(torch.sum(z[rand_inds[0]]*z[rand_inds[1]],1))+ self.fudge) * (1 - 2 * self.fudge)
+        # adj = (self.sigmoid(torch.mm(z, z.t())) + self.fudge) * (1 - 2 * self.fudge)
+        # return adj
 
 
 class GAE(nn.Module):
@@ -137,7 +138,13 @@ class GAE(nn.Module):
 
     def forward(self, x):
         z = self.encoder(x)
-        A_pred = self.decoderA(z)
+        # sample 3 pos and 29997 neg from adj
+        rand_inds=[]
+        rand_inds.append(self.adj._indices[:3])
+        #...
+
+        self.rand_inds = np.array(rand_inds).transpose()
+        A_pred = self.decoderA(z,rand_inds)
         x_pred = self.decoderX(z)
         return A_pred, x_pred
 
@@ -150,11 +157,18 @@ class GAECrit(object):
         self.norm = norm
 
     def weighted_cross_entropy(sigmout, targets, pos_weight):
-        return torch.sum(targets * -logits.log() * pos_weight + 
-                (1 - targets) * -(1 - logits).log())
+        loss = 0
+        for i in range(30000):
+            if i<3:
+                loss = loss - sigmout[i].log() * pos_weight
+            else:
+                loss = loss -(1 - sigmout[i]).log()
+        return loss
+        #torch.sum(targets * -logits.log() * pos_weight + 
+                # (1 - targets) * -(1 - logits).log())
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
-        loss = self.norm*self.weighted_cross_entropy(A_pred,adj.to_dense(),self.pos_weight)
+        loss = self.norm*self.weighted_cross_entropy(A_pred,adj,self.pos_weight)
         return loss
 
     def L2LossOnX(self,x_pred,x):
