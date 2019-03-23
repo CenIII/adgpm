@@ -203,11 +203,11 @@ class GCN(nn.Module):
                                                  300, 
                                                  dropout=0.5, 
                                                  alpha=0.2, 
-                                                 concat=True) for _ in range(2)]
+                                                 concat=True) for _ in range(1)]
             for i, attention in enumerate(self.attentions):
                 self.add_module('attention_{}'.format(i), attention)
 
-            conv = GraphConv(2*last_c, c, dropout=dropout)
+            conv = GraphConv(last_c, c, dropout=dropout)
             self.add_module('conv{}'.format(i), conv)
             layers.append(conv)
 
