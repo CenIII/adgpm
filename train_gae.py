@@ -87,8 +87,8 @@ if __name__ == '__main__':
     for epoch in range(1, args.max_epoch + 1):
         gae.train()
         A_pred, x_pred = gae(word_vectors)
-        loss = crit(A_pred,x_pred,gae.adj,word_vectors)
-
+        lossA, lossX = crit(A_pred,x_pred,gae.adj,word_vectors)
+        loss = lossA + lossX
 
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         optimizer.zero_grad()
@@ -99,15 +99,15 @@ if __name__ == '__main__':
         # output_vectors = gae(word_vectors)
         # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
         A_pred, x_pred = gae(word_vectors)
-        loss = crit(A_pred,x_pred,gae.adj,word_vectors)
+        lossA, lossX = crit(A_pred,x_pred,gae.adj,word_vectors)
         # if v_val > 0:
         #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
         #     loss = val_loss
         # else:
         #     val_loss = 0
         #     loss = train_loss
-        print('epoch {}, train_loss={:.4f}'
-              .format(epoch, train_loss))
+        print('epoch {}, A_loss={:.4f}, X_loss:{:.4f}'
+              .format(epoch, lossA.data, lossX.data))
 
         trlog['train_loss'].append(train_loss)
         trlog['val_loss'].append(val_loss)

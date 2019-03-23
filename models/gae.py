@@ -187,7 +187,7 @@ class GAECrit(nn.Module):
     def forward(self,A_pred,x_pred,adj,x):
         A_loss = self.BCELossOnA(A_pred)
         x_loss = self.L2LossOnX(x_pred,x)
-        return A_loss+x_loss
+        return A_loss, x_loss
 
         
 
