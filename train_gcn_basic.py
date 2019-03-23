@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from utils import ensure_path, set_gpu, l2_loss
 from models.gcn import GCN
-
+import numpy as np
 
 def save_checkpoint(name):
     torch.save(gcn.state_dict(), osp.join(save_path, name + '.pth'))
@@ -97,10 +97,13 @@ if __name__ == '__main__':
 
     # build neigbor dict
     adj = gcn.adj
-    indices = adj._indices().t()
+    indices = adj._indices().t().data.cpu().numpy()
     neib_dict = {}
     for ind in indices:
         neib_dict.setdefault(ind[0],[]).append(ind[1])
+
+    for k,v in neib_dict.items():
+        neib_dict[k] = torch.LongTensor(v).cuda()
 
     output_vectors = torch.zeros([n,2049]).cuda()
     output_vectors[:1000] = fc_vectors
@@ -110,29 +113,29 @@ if __name__ == '__main__':
         for i in range(1000,n):
             output_vectors[i] = getMeanVec(output_vectors,i,neib_dict,word_vectors)
 
-        gcn.train()
-        output_vectors = gcn(word_vectors)
-        loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        # gcn.train()
+        # output_vectors = gcn(word_vectors)
+        # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
 
-        gcn.eval()
-        output_vectors = gcn(word_vectors)
-        train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
-        if v_val > 0:
-            val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
-            loss = val_loss
-        else:
-            val_loss = 0
-            loss = train_loss
-        print('epoch {}, train_loss={:.4f}, val_loss={:.4f}'
-              .format(epoch, train_loss, val_loss))
+        # gcn.eval()
+        # output_vectors = gcn(word_vectors)
+        # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
+        # if v_val > 0:
+        #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
+        #     loss = val_loss
+        # else:
+        #     val_loss = 0
+        #     loss = train_loss
+        # print('epoch {}, train_loss={:.4f}, val_loss={:.4f}'
+        #       .format(epoch, train_loss, val_loss))
 
-        trlog['train_loss'].append(train_loss)
-        trlog['val_loss'].append(val_loss)
-        trlog['min_loss'] = min_loss
-        torch.save(trlog, osp.join(save_path, 'trlog'))
+        # trlog['train_loss'].append(train_loss)
+        # trlog['val_loss'].append(val_loss)
+        # trlog['min_loss'] = min_loss
+        # torch.save(trlog, osp.join(save_path, 'trlog'))
 
         if (epoch == args.save_epoch):
             if args.no_pred:
@@ -143,9 +146,9 @@ if __name__ == '__main__':
                     'pred': output_vectors
                 }
 
-        if epoch == args.save_epoch:
-            save_checkpoint('epoch-{}'.format(epoch))
-            break
+        # if epoch == args.save_epoch:
+        #     save_checkpoint('epoch-{}'.format(epoch))
+        #     break
         
         pred_obj = None
 
