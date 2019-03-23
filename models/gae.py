@@ -144,15 +144,17 @@ class GAE(nn.Module):
 
 class GAECrit(object):
     """docstring for GAECrit"""
-    def __init__(self, arg):
+    def __init__(self,pos_weight,norm):
         super(GAECrit, self).__init__()
+        self.pos_weight = pos_weight
+        self.norm = norm
 
     def weighted_cross_entropy(sigmout, targets, pos_weight):
         return torch.sum(targets * -logits.log() * pos_weight + 
                 (1 - targets) * -(1 - logits).log())
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
-        loss = self.weighted_cross_entropy(A_pred,adj.to_dense(),self.pos_weight)
+        loss = self.norm*self.weighted_cross_entropy(A_pred,adj.to_dense(),self.pos_weight)
         return loss
 
     def L2LossOnX(self,x_pred,x):
