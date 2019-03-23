@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--trainval', default='10,0')
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--weight-decay', type=float, default=0.0005)
-    parser.add_argument('--save-epoch', type=int, default=3000)
+    parser.add_argument('--save-epoch', type=int, default=300)
     parser.add_argument('--save-path', default='save/gcn-basic')
 
     parser.add_argument('--gpu', default='0')
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         trlog['min_loss'] = min_loss
         torch.save(trlog, osp.join(save_path, 'trlog'))
 
-        if (epoch == args.save_epoch):
+        if (epoch % args.save_epoch == 0):
             if args.no_pred:
                 pred_obj = None
             else:
@@ -117,9 +117,9 @@ if __name__ == '__main__':
                     'pred': output_vectors
                 }
 
-        if epoch == args.save_epoch:
-            save_checkpoint('epoch-{}'.format(epoch))
-            break
+        if epoch % args.save_epoch == 0:
+            save_checkpoint('epoch-')
+            # break
         
         pred_obj = None
 
