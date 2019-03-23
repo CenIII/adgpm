@@ -218,7 +218,7 @@ class GCN(nn.Module):
         self.layers = layers
 
     def forward(self, x):
-        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.dropout(x, 0.5, training=self.training)
         x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
         for conv in self.layers:
             x = conv(x, self.adj)
