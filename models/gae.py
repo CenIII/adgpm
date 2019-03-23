@@ -119,7 +119,7 @@ class GAE(nn.Module):
         n_edges = torch.sparse.sum(adj)
         self.pos_weight = (N*N - n_edges)/n_edges
         self.norm = N*N / float((N*N - n_edges) * 2)
-        self.pos_indices_list = list(self.adj._indices().t().data.numpy())
+        self.pos_indices_list = self.adj._indices().t().data.numpy()
         self.pos_indices = {}
         for ind in self.pos_indices_list:
             self.pos_indices[tuple(list(ind))] = 1
