@@ -112,13 +112,15 @@ class GAE(nn.Module):
         edges = np.array(edges)
         adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
                             shape=(n, n), dtype='float32')
+        adj = spm_to_tensor(adj)
         self.adj = adj
         N = len(adj)
-        n_edges = np.sum(adj)
-        weight = (N*N - n_edges)/n_edges
-        wt_mat = weight*adj
-        wt_mat[wt_mat==0] = 1
-        self.wt_mat = wt_mat
+        n_edges = torch.sparse.sum(adj)
+        self.pos_weight = (N*N - n_edges)/n_edges
+        self.norm = N*N / float((N*N - n_edges) * 2)
+        # wt_mat = adj.mul(weight)
+        # wt_mat[wt_mat==0] = 1
+        # self.wt_mat = wt_mat
 
         self.decoderA = InnerProductDecoder(0.3)
         if decoder == 'gcn':
@@ -145,8 +147,12 @@ class GAECrit(object):
     def __init__(self, arg):
         super(GAECrit, self).__init__()
 
+    def weighted_cross_entropy(sigmout, targets, pos_weight):
+        return torch.sum(targets * -logits.log() * pos_weight + 
+                (1 - targets) * -(1 - logits).log())
     def BCELossOnA(self,A_pred,adj):
-        loss = (A_pred-adj)*wt_mat
+        # loss = (A_pred-adj)*wt_mat
+        loss = self.weighted_cross_entropy(A_pred,adj.to_dense(),self.pos_weight)
         return loss
 
     def L2LossOnX(self,x_pred,x):
