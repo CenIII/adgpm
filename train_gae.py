@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
     gae = GAE(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, args.norm_method).cuda()
-    crit = GAECrit()
+    crit = GAECrit(gae.pos_weight, gae.norm)
 
     print('{} nodes, {} edges'.format(n, len(edges)))
     print('word vectors:', word_vectors.shape)
