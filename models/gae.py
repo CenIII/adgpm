@@ -140,8 +140,13 @@ class GAE(nn.Module):
         z = self.encoder(x)
         # sample 3 pos and 29997 neg from adj
         rand_inds=[]
-        rand_inds.append(self.adj._indices[:3])
-        #...
+        pos_sample = np.random.choice(97412, 3)
+        pos_indices = self.adj._indices().t().data.numpy()
+        rand_inds.append(pos_indices[pos_sample])
+        for i in range(29997):
+            ind = np.random.choice(32324, 2)
+            if ind not in pos_indices:
+                rand_inds.append(ind)
 
         self.rand_inds = np.array(rand_inds).transpose()
         A_pred = self.decoderA(z,rand_inds)
