@@ -126,11 +126,11 @@ class GAE(nn.Module):
         if decoder == 'gcn':
             self.decoderX = GCN(n, edges, out_channels, in_channels, hidden_layers, norm_method=norm_method)
         else:
-            self.decoderX = nn.Sequential([
+            self.decoderX = nn.Sequential(
                 nn.Linear(out_channels,out_channels),
                 nn.ReLU(),
                 nn.Linear(out_channels,in_channels)
-                ])
+                )
 
     def getLatentEmbedding(self,x):
         return self.encoder(x)
