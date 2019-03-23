@@ -119,6 +119,10 @@ class GAE(nn.Module):
         n_edges = torch.sparse.sum(adj)
         self.pos_weight = (N*N - n_edges)/n_edges
         self.norm = N*N / float((N*N - n_edges) * 2)
+        self.pos_indices_list = list(self.adj._indices().t().data.numpy())
+        self.pos_indices = {}
+        for ind in self.pos_indices_list:
+            self.pos_indices[ind] = 1
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
         # self.wt_mat = wt_mat
@@ -141,11 +145,11 @@ class GAE(nn.Module):
         # sample 3 pos and 29997 neg from adj
         rand_inds=[]
         pos_sample = np.random.choice(97412, 3)
-        pos_indices = self.adj._indices().t().data.numpy()
-        rand_inds.append(pos_indices[pos_sample])
+        
+        rand_inds.append(self.pos_indices_list[pos_sample])
         for i in range(29997):
             ind = np.random.choice(32324, 2)
-            if ind not in pos_indices:
+            if ind not in self.pos_indices:
                 rand_inds.append(ind)
 
         self.rand_inds = np.array(rand_inds).transpose()
