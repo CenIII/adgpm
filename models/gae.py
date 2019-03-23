@@ -109,7 +109,16 @@ class GAE(nn.Module):
     def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in', decoder='nn'):
         super(GVAE, self).__init__()
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
-        self.adj = self.encoder.adj
+        edges = np.array(edges)
+        self.adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
+                            shape=(n, n), dtype='float32')
+        N = len(adj)
+        n_edges = np.sum(adj)
+        weight = (N*N - n_edges)/n_edges
+        wt_mat = weight*adj
+        wt_mat[wt_mat==0] = 1
+        self.wt_mat = wt_mat
+
         self.decoderA = InnerProductDecoder(0.3)
         if decoder == 'gcn':
             self.decoderX = GCN(n, edges, out_channels, in_channels, hidden_layers, norm_method=norm_method)
@@ -123,7 +132,7 @@ class GAE(nn.Module):
     def getLatentEmbedding(self,x):
         return self.encoder(x)
 
-    def forward(self, x)
+    def forward(self, x):
         z = self.encoder(x)
         A_pred = self.decoderA(z)
         x_pred = self.decoderX(z)
@@ -136,8 +145,8 @@ class GAECrit(object):
         super(GAECrit, self).__init__()
 
     def BCELossOnA(self,A_pred,adj):
-        
-        return 0
+        loss = (A_pred-adj)*wt_mat
+        return loss
 
     def L2LossOnX(self,x_pred,x):
         return ((x_pred - x)**2).sum() / (len(x) * len(x[0]))
