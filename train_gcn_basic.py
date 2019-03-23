@@ -83,7 +83,33 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
+
+    def getMeanVec(output,k,nbdict,wv):
+        neigbors = nbdict[k] # list
+        query_wv = wv[k]
+
+        # indices = torch.LongTensor([0, 2])
+        key_wvs = torch.index_select(wv, 0, neigbors)
+        values = torch.index_select(output, 0, neigbors)
+        att_vec = torch.mult(query_wv,key_wvs)
+        att_vec = torch.softmax(att_vec)
+        return torch.mult(values,att_vec)
+
+    # build neigbor dict
+    adj = gcn.adj
+    indices = adj._indices().t()
+    neib_dict = {}
+    for ind in indices:
+        neib_dict.setdefault(ind[0],[]).append(ind[1])
+
+    output_vectors = torch.zeros([n,2049]).cuda()
+    output_vectors[:1000] = fc_vectors
+
+
     for epoch in range(1, args.max_epoch + 1):
+        for i in range(1000,n):
+            output_vectors[i] = getMeanVec(output_vectors,i,neib_dict,word_vectors)
+
         gcn.train()
         output_vectors = gcn(word_vectors)
         loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
