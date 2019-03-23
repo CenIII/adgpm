@@ -172,9 +172,10 @@ class GCN(nn.Module):
         edges = np.array(edges)
         adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
                             shape=(n, n), dtype='float32')
-        adj = normt_spm(adj, method=norm_method)
-        adj = spm_to_tensor(adj)
-        self.adj = adj.cuda()
+        self.raw_adj = spm_to_tensor(adj).cuda()
+        norm_adj = normt_spm(adj, method=norm_method)
+        norm_adj = spm_to_tensor(adj)
+        self.adj = norm_adj.cuda()
 
         hl = hidden_layers.split(',')
         if hl[-1] == 'd':
@@ -217,6 +218,8 @@ class GCN(nn.Module):
         self.layers = layers
 
     def forward(self, x):
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = torch.cat([att(x, self.raw_adj) for att in self.attentions], dim=1)
         for conv in self.layers:
             x = conv(x, self.adj)
         return F.normalize(x)
