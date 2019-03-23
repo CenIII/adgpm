@@ -145,8 +145,9 @@ class GAE(nn.Module):
         # sample 3 pos and 29997 neg from adj
         rand_inds=[]
         pos_sample = np.random.choice(97412, 3)
-        
-        rand_inds.append(self.pos_indices_list[pos_sample])
+        zzz = self.pos_indices_list[pos_sample]
+        for i in range(3):
+            rand_inds.append(zzz[i])
         for i in range(29997):
             ind = np.random.choice(32324, 2)
             if tuple(list(ind)) not in self.pos_indices:
