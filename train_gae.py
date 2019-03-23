@@ -109,10 +109,10 @@ if __name__ == '__main__':
         print('epoch {}, A_loss={:.4f}, X_loss:{:.4f}'
               .format(epoch, lossA.data, lossX.data))
 
-        trlog['train_loss'].append(train_loss)
-        trlog['val_loss'].append(val_loss)
-        trlog['min_loss'] = min_loss
-        torch.save(trlog, osp.join(save_path, 'trlog'))
+        # trlog['train_loss'].append(lossA.data+lossX.data)
+        # trlog['val_loss'].append(0)
+        # trlog['min_loss'] = min_loss
+        # torch.save(trlog, osp.join(save_path, 'trlog'))
 
         if (epoch == args.save_epoch):
             if args.no_pred:
