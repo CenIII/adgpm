@@ -107,7 +107,7 @@ class GAE(nn.Module):
     """Non-probabilistic graph auto-encoder (GAE) model"""
     # out_channels: 500
     def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in', decoder='nn'):
-        super(GVAE, self).__init__()
+        super(GAE, self).__init__()
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
         edges = np.array(edges)
         self.adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
