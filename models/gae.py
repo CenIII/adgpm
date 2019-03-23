@@ -167,12 +167,12 @@ class GAECrit(nn.Module):
         self.norm = norm
 
     def weighted_cross_entropy(self, sigmout):
-        loss = 0
-        for i in range(len(sigmout)):
-            if i<3:
-                loss = loss - sigmout[i].log() * self.pos_weight
-            else:
-                loss = loss - (1 - sigmout[i]).log()
+        loss = torch.sum(- sigmout[:3].log()) * self.pos_weight - torch.sum((1 - sigmout[3:]).log())
+        # for i in range(len(sigmout)):
+        #     if i<3:
+        #         loss = loss - sigmout[i].log() * self.pos_weight
+        #     else:
+        #         loss = loss - (1 - sigmout[i]).log()
         return loss
         #torch.sum(targets * -logits.log() * pos_weight + 
                 # (1 - targets) * -(1 - logits).log())

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from utils import ensure_path, set_gpu, l2_loss
 from models.gae import GAE, GAECrit
-
+import time
 
 def save_checkpoint(name):
     torch.save(gae.state_dict(), osp.join(save_path, name + '.pth'))
@@ -85,6 +85,7 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     for epoch in range(1, args.max_epoch + 1):
+        start = time.time()
         gae.train()
         A_pred, x_pred = gae(word_vectors)
         lossA, lossX = crit(A_pred,x_pred,gae.adj,word_vectors)
@@ -106,8 +107,9 @@ if __name__ == '__main__':
         # else:
         #     val_loss = 0
         #     loss = train_loss
-        print('epoch {}, A_loss={:.4f}, X_loss:{:.4f}'
-              .format(epoch, lossA.data, lossX.data))
+        end = time.time() - start
+        print('epoch {}, A_loss={:.4f}, X_loss:{:.4f}, iter_time:{:.2f}s'
+              .format(epoch, lossA.data, lossX.data, end))
 
         # trlog['train_loss'].append(lossA.data+lossX.data)
         # trlog['val_loss'].append(0)
