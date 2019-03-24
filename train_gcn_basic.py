@@ -97,7 +97,7 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/')
-    loader = DataLoader(dataset=dataset, batch_size=512,
+    loader = DataLoader(dataset=dataset, batch_size=1024,
                         shuffle=False, num_workers=2)
 
     for epoch in range(1, args.max_epoch + 1):
