@@ -19,6 +19,11 @@ def save_checkpoint(name):
 def mask_l2_loss(a, b, mask):
     return l2_loss(a[mask], b[mask])
 
+def stach_l2_loss(output, data, label, wnid2index):
+    inds = torch.tensor([wnid2index[x] for x in label])
+    preds = torch.index_select(output, 0, inds)
+    loss = ((preds - data)**2).sum()/(len(inds)*2)
+    return loss 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -79,6 +84,11 @@ if __name__ == '__main__':
 
     min_loss = 1e18
 
+    wnid2index = {}
+
+    for i in range(len(wnids)):
+        wnid2index[wnids[i]] = i
+
     trlog = {}
     trlog['train_loss'] = []
     trlog['val_loss'] = []
@@ -89,26 +99,29 @@ if __name__ == '__main__':
                         shuffle=False, num_workers=2)
 
     for epoch in range(1, args.max_epoch + 1):
-        gcn.train()
-        output_vectors = gcn(word_vectors)
+        for batch_id, batch in enumerate(loader, 1):
+            data, label = batch 
+            gcn.train()
+            output_vectors = gcn(word_vectors)
 
-        # 改变loss
-        loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            # 改变loss
+            loss = stach_l2_loss(output_vectors, data, label, wnid2index)
+            # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        gcn.eval()
-        output_vectors = gcn(word_vectors)
-        train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
-        if v_val > 0:
-            val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
-            loss = val_loss
-        else:
-            val_loss = 0
-            loss = train_loss
-        print('epoch {}, train_loss={:.4f}, val_loss={:.4f}'
-              .format(epoch, train_loss, val_loss))
+        # gcn.eval()
+        # output_vectors = gcn(word_vectors)
+        # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
+        # if v_val > 0:
+        #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
+        #     loss = val_loss
+        # else:
+        #     val_loss = 0
+        #     loss = train_loss
+        print('epoch {}, train_loss={:.4f}'
+              .format(epoch, loss.data.cpu().numpy()))
 
         trlog['train_loss'].append(train_loss)
         trlog['val_loss'].append(val_loss)
