@@ -25,7 +25,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list.remove('feats.npy')
             for i in range(len(npy_list)):
                 npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
-            self.npyfile_list.append(npy_list)  # path, wnid
+            self.npyfile_list += npy_list  # path, wnid
     
     # def get_subset(self, wnid):
     #     if wnid not in self.wnid_list:
