@@ -20,7 +20,7 @@ def test_on_subset(dataset, cnn, n, wnid, pred_vectors, all_label,
     count = 0
     print('processing '+wnid)
     for i in range(len(dataset)):
-        np.save('materials/datasets/imagenet_feats/'+wnid+str(count)+'.npy', dataset[i])
+        np.save('materials/datasets/imagenet_feats/'+wnid+'/'+wnid+'_'+str(count)+'.npy', dataset[i])
         count+=1
 
     # loader = DataLoader(dataset=dataset, batch_size=32,
