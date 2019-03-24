@@ -105,6 +105,7 @@ if __name__ == '__main__':
                                     ascii=True)
         for batch_id, batch in qdar:
             data, label = batch 
+            data = data.cuda()
             gcn.train()
             output_vectors = gcn(word_vectors)
 
