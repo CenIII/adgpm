@@ -99,7 +99,10 @@ if __name__ == '__main__':
                         shuffle=False, num_workers=2)
 
     for epoch in range(1, args.max_epoch + 1):
-        for batch_id, batch in enumerate(loader, 1):
+        qdar = tqdm.tqdm(enumerate(loader, 1),
+                                    total= len(loader),
+                                    ascii=True)
+        for batch_id, batch in qdar:
             data, label = batch 
             gcn.train()
             output_vectors = gcn(word_vectors)
@@ -110,7 +113,7 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            qdar.set_postfix(loss=str(np.round(loss.data.cpu().numpy(),3)))
         # gcn.eval()
         # output_vectors = gcn(word_vectors)
         # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
