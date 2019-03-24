@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from models.resnet import make_resnet50_base
 from datasets.imagenet import ImageNetFeats
 from utils import set_gpu, pick_vectors
-
+import numpy as np
 
 def test_on_subset(dataset, cnn, n, wnid, pred_vectors, all_label,
                    consider_trains):
