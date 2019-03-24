@@ -122,7 +122,6 @@ if __name__ == '__main__':
 
         if epoch % args.save_epoch == 0:
             save_checkpoint('epoch--')
-            break
         
         pred_obj = None
 
