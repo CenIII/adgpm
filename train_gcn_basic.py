@@ -126,26 +126,25 @@ if __name__ == '__main__':
         # else:
         #     val_loss = 0
         #     loss = train_loss
-        print('epoch {}, train_loss={:.4f}'
-              .format(epoch, loss.data.cpu().numpy()))
+        # print('epoch {}, train_loss={:.4f}'
+        #       .format(epoch, loss.data.cpu().numpy()))
 
-        trlog['train_loss'].append(train_loss)
-        trlog['val_loss'].append(val_loss)
-        trlog['min_loss'] = min_loss
-        torch.save(trlog, osp.join(save_path, 'trlog'))
+        # trlog['train_loss'].append(train_loss)
+        # trlog['val_loss'].append(val_loss)
+        # trlog['min_loss'] = min_loss
+        # torch.save(trlog, osp.join(save_path, 'trlog'))
 
-        if (epoch == args.save_epoch):
-            if args.no_pred:
-                pred_obj = None
-            else:
-                pred_obj = {
-                    'wnids': wnids,
-                    'pred': output_vectors
-                }
+        # if (epoch == args.save_epoch):
+        if args.no_pred:
+            pred_obj = None
+        else:
+            pred_obj = {
+                'wnids': wnids,
+                'pred': output_vectors
+            }
 
-        if epoch == args.save_epoch:
-            save_checkpoint('epoch-{}'.format(epoch))
-            break
+        # if epoch == args.save_epoch:
+        save_checkpoint('epoch-{}'.format(epoch))
         
         pred_obj = None
 
