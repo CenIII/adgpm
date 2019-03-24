@@ -89,7 +89,7 @@ if __name__ == '__main__':
         x_recons = gcn_dec(output_vectors)
         loss1 = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         loss_recons = mask_l2_loss(x_recons, word_vectors, list(range(len(word_vectors))))
-        loss = loss1 + loss_recons
+        loss = 0.8*loss1 + 0.2*loss_recons
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         # trlog['min_loss'] = min_loss
         # torch.save(trlog, osp.join(save_path, 'trlog'))
 
-        if (epoch == args.save_epoch):
+        if (epoch % args.save_epoch == 0):
             if args.no_pred:
                 pred_obj = None
             else:
@@ -120,8 +120,8 @@ if __name__ == '__main__':
                     'pred': output_vectors
                 }
 
-        if epoch == args.save_epoch:
-            save_checkpoint('epoch-{}'.format(epoch))
+        if epoch % args.save_epoch == 0:
+            save_checkpoint('epoch--')
             break
         
         pred_obj = None
