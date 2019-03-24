@@ -11,6 +11,7 @@ from models.gcn import GCN
 from datasets.imagenet_train import ImageNetFeatsTrain
 from torch.utils.data import DataLoader
 import tqdm
+import numpy as np
 
 def save_checkpoint(name):
     torch.save(gcn.state_dict(), osp.join(save_path, name + '.pth'))
