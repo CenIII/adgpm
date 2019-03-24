@@ -21,7 +21,7 @@ def mask_l2_loss(a, b, mask):
     return l2_loss(a[mask], b[mask])
 
 def stach_l2_loss(output, data, label, wnid2index):
-    inds = torch.tensor([wnid2index[x] for x in label])
+    inds = torch.tensor([wnid2index[x] for x in label]).cuda()
     preds = torch.index_select(output, 0, inds)
     loss = ((preds - data)**2).sum()/(len(inds)*2)
     return loss 
