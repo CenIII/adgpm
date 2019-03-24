@@ -8,7 +8,8 @@ import torch.nn.functional as F
 
 from utils import ensure_path, set_gpu, l2_loss
 from models.gcn import GCN
-
+from datasets.imagenet_train import ImageNetFeatsTrain
+from torch.utils.data import DataLoader
 
 def save_checkpoint(name):
     torch.save(gcn.state_dict(), osp.join(save_path, name + '.pth'))
@@ -83,9 +84,15 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
+    dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/')
+    loader = DataLoader(dataset=dataset, batch_size=32,
+                        shuffle=False, num_workers=2)
+
     for epoch in range(1, args.max_epoch + 1):
         gcn.train()
         output_vectors = gcn(word_vectors)
+
+        # 改变loss
         loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         optimizer.zero_grad()
         loss.backward()
