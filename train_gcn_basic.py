@@ -60,14 +60,14 @@ if __name__ == '__main__':
     fc_vectors = F.normalize(fc_vectors)
 
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
-    gcn = GCN(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, args.norm_method).cuda()
-
+    gcn = GCN(n, edges, word_vectors.shape[1], fc_vectors.shape[1], '2048,2048,1024,1024,d512,d', args.norm_method).cuda()
+    gcn_dec = GCN(n, edges, fc_vectors.shape[1], word_vectors.shape[1], 'd2048,d', args.norm_method).cuda()
     print('{} nodes, {} edges'.format(n, len(edges)))
     print('word vectors:', word_vectors.shape)
     print('fc vectors:', fc_vectors.shape)
     print('hidden layers:', hidden_layers)
 
-    optimizer = torch.optim.Adam(gcn.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(list(gcn.parameters())+list(gcn_dec.parameters()), lr=args.lr, weight_decay=args.weight_decay)
 
     v_train, v_val = map(float, args.trainval.split(','))
     n_trainval = len(fc_vectors)
@@ -86,27 +86,30 @@ if __name__ == '__main__':
     for epoch in range(1, args.max_epoch + 1):
         gcn.train()
         output_vectors = gcn(word_vectors)
-        loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
+        x_recons = gcn_dec(output_vectors)
+        loss1 = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
+        loss_recons = mask_l2_loss(x_recons, word_vectors, list(range(len(word_vectors))))
+        loss = loss1 + loss_recons
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        gcn.eval()
-        output_vectors = gcn(word_vectors)
-        train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
-        if v_val > 0:
-            val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
-            loss = val_loss
-        else:
-            val_loss = 0
-            loss = train_loss
-        print('epoch {}, train_loss={:.4f}, val_loss={:.4f}'
-              .format(epoch, train_loss, val_loss))
+        # gcn.eval()
+        # output_vectors = gcn(word_vectors)
+        # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
+        # if v_val > 0:
+        #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
+        #     loss = val_loss
+        # else:
+        #     val_loss = 0
+        #     loss = train_loss
+        print('epoch {}, train_loss={:.4f}, recons_loss={:.4f}'
+              .format(epoch, loss1.data.cpu().numpy(), loss_recons.data.cpu().numpy()))
 
-        trlog['train_loss'].append(train_loss)
-        trlog['val_loss'].append(val_loss)
-        trlog['min_loss'] = min_loss
-        torch.save(trlog, osp.join(save_path, 'trlog'))
+        # trlog['train_loss'].append(train_loss)
+        # trlog['val_loss'].append(val_loss)
+        # trlog['min_loss'] = min_loss
+        # torch.save(trlog, osp.join(save_path, 'trlog'))
 
         if (epoch == args.save_epoch):
             if args.no_pred:
