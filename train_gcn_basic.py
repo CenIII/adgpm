@@ -97,13 +97,16 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/')
-    loader = DataLoader(dataset=dataset, batch_size=1024,
+    loader = DataLoader(dataset=dataset, batch_size=2048,
                         shuffle=False, num_workers=2)
+
+    logger = open(osp.join(save_path,'loss_history'),'w')
 
     for epoch in range(1, args.max_epoch + 1):
         qdar = tqdm.tqdm(enumerate(loader, 1),
                                     total= len(loader),
                                     ascii=True)
+        ep_loss = 0
         for batch_id, batch in qdar:
             data, label = batch 
             data = data.cuda()
@@ -116,7 +119,9 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            qdar.set_postfix(loss=str(np.round(loss.data.cpu().numpy(),3)))
+            loss_data = loss.data.cpu().numpy()
+            qdar.set_postfix(loss=str(np.round(loss_data,3)))
+            ep_loss += loss_data
         # gcn.eval()
         # output_vectors = gcn(word_vectors)
         # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
@@ -135,6 +140,9 @@ if __name__ == '__main__':
         # torch.save(trlog, osp.join(save_path, 'trlog'))
 
         # if (epoch == args.save_epoch):
+        ep_loss = ep_loss/len(loader)
+        print('Epoch average loss: '+str(ep_loss))
+        logger.write(str(np.round(ep_loss,3))+'\n')
         if args.no_pred:
             pred_obj = None
         else:
