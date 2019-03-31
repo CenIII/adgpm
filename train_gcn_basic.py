@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--max-epoch', type=int, default=5000)
     parser.add_argument('--trainval', default='10,0')
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--weight-decay', type=float, default=0.0005)
     parser.add_argument('--save-epoch', type=int, default=3000)
     parser.add_argument('--save-path', default='save/gcn-basic')
