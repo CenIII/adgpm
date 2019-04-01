@@ -222,7 +222,8 @@ class GAECrit(nn.Module):
         return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/(len(logits)**2), error_rate
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
-        loss, error_rate = self.norm*self.weighted_cross_entropy(A_pred,adj)
+        loss, error_rate = self.weighted_cross_entropy(A_pred,adj)
+        loss = self.norm*loss
         return loss, error_rate
 
     def L2LossOnX(self,x_pred,x):
