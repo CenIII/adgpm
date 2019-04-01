@@ -31,7 +31,7 @@ def test_on_subset(dataset, cnn, n, fc_vectors, pred_vectors, all_label,
 
     # fc_vectors [2049, 1000]
 
-    conseAtt = torch.matmul(feat, fc_vectors)  # 113x1000
+    conseAtt = torch.matmul(feat, fc_vectors.t())  # 113x1000
 
     # softmax
     coonseAtt = F.softmax(conseAtt,1)
