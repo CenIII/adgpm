@@ -123,6 +123,10 @@ class GAE(nn.Module):
         self.pos_indices = {}
         for ind in self.pos_indices_list:
             self.pos_indices[tuple(list(ind))] = 1
+
+        # traverse 1000 known nodes, collect all 2-hops nodes
+        self.nodes_2hops, self.posi, self.negi = self.get2hopnodes(adj)
+
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
         # self.wt_mat = wt_mat
@@ -137,24 +141,51 @@ class GAE(nn.Module):
                 nn.Linear(out_channels,in_channels)
                 )
 
+    def get2hopnodes(self, adj):
+        def getNeighbs(adj, ind):
+            alist = None
+            return alist
+        nodeList = []
+        for i in range(1000):
+            fstLst = []
+            fstLst = getNeighbs(adj,i)
+            scdLst = []
+            for ind in fstLst:
+                scdLst += getNeighbs(adj,ind)
+            nodeList += fstLst
+            nodeList += scdLst
+        nodeList = list(set(nodeList))
+        nodeList = [[[nodeList[i],nodeList[j]] for i in range(len(nodeList))] for j in range(len(nodeList))]
+        pos_inds = []
+        neg_inds = []
+        for i in range(len(nodeList)):
+            indpair = nodeList[i]
+            if tuple(indpair) in self.pos_indices:
+                pos_inds.append(i)
+            else:
+                neg_inds.append(i)
+        nodeList = np.array(nodeList).transpose()
+        return nodeList, pos_inds, neg_inds
+
     def getLatentEmbedding(self,x):
         return self.encoder(x)
 
     def forward(self, x):
         z = self.encoder(x)
         # sample 3 pos and 29997 neg from adj
-        rand_inds=[]
-        pos_sample = np.random.choice(97412, 3)
-        zzz = self.pos_indices_list[pos_sample]
-        for i in range(3):
-            rand_inds.append(zzz[i])
-        for i in range(29997):
-            ind = np.random.choice(32324, 2)
-            if tuple(list(ind)) not in self.pos_indices:
-                rand_inds.append(ind)
 
-        self.rand_inds = np.array(rand_inds).transpose()
-        A_pred = self.decoderA(z,self.rand_inds)
+        # rand_inds=[]
+        # pos_sample = np.random.choice(97412, 3)
+        # zzz = self.pos_indices_list[pos_sample]
+        # for i in range(3):
+        #     rand_inds.append(zzz[i])
+        # for i in range(29997):
+        #     ind = np.random.choice(32324, 2)
+        #     if tuple(list(ind)) not in self.pos_indices:
+        #         rand_inds.append(ind)
+
+        # self.rand_inds = np.array(rand_inds).transpose()
+        A_pred = self.decoderA(z,self.nodes_2hops)
         x_pred = self.decoderX(z)
         return A_pred, x_pred
 
@@ -167,7 +198,7 @@ class GAECrit(nn.Module):
         self.norm = norm
 
     def weighted_cross_entropy(self, sigmout):
-        loss = (torch.sum(- sigmout[:3].log()) * self.pos_weight - torch.sum((1 - sigmout[3:]).log()))/len(sigmout)
+        loss = (torch.sum(- sigmout[self.posi].log()) * self.pos_weight - torch.sum((1 - sigmout[self.negi]).log()))/len(sigmout)
         # for i in range(len(sigmout)):
         #     if i<3:
         #         loss = loss - sigmout[i].log() * self.pos_weight
