@@ -127,6 +127,10 @@ class GAE(nn.Module):
         # traverse 1000 known nodes, collect all 2-hops nodes
         self.nodes_2hops = self.get2hopnodes(inds2hops)
         self.targets = (adj.to_dense())[self.nodes_2hops][:,self.nodes_2hops]
+        t_N = len(self.targets)
+        t_n_edges = torch.sum(self.targets)
+        self.pos_weight = (t_N*t_N - t_n_edges)/t_n_edges
+        self.norm = t_N*t_N / float((t_N*t_N - t_n_edges) * 2)
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
         # self.wt_mat = wt_mat
