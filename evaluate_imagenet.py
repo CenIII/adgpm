@@ -39,7 +39,7 @@ def test_on_subset(dataset, cnn, n, fc_vectors, pred_vectors, all_label,
     # conseAtt x embs
     preds = torch.matmul(conseAtt,embs[:,:1000].t()) # 113x512  every image get a embs estimation
     # find nearest emb
-    table = torch.matmul(F.normalize(preds,1), F.normalize(embs))      # 113x2549
+    table = torch.matmul(F.normalize(preds,1), F.normalize(embs,0))      # 113x2549
     if not consider_trains:
         table[:, :n] = -1e18
 
