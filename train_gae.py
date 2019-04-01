@@ -129,7 +129,7 @@ if __name__ == '__main__':
         #     val_loss = 0
         #     loss = train_loss
         end = time.time() - start
-        print('epoch {}, A_loss={:.4f}, A_error_rate={:.2f}, X_loss:{:.4f}, iter_time:{:.2f}s'
+        print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, iter_time:{:.2f}s'
               .format(epoch, lossA.data, error_rateA.data, lossX, end))
 
         # trlog['train_loss'].append(lossA.data+lossX.data)
