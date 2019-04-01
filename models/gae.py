@@ -99,9 +99,9 @@ class InnerProductDecoder(nn.Module):
  
     def forward(self, z, rand_inds):  # 30000 inds
         # z = F.dropout(z, self.dropout, training=self.training)
-        return (self.sigmoid(torch.sum(z[rand_inds[0]]*z[rand_inds[1]],1))+ self.fudge) * (1 - 2 * self.fudge)
-        # adj = (self.sigmoid(torch.mm(z, z.t())) + self.fudge) * (1 - 2 * self.fudge)
-        # return adj
+        # return (self.sigmoid(torch.sum(z[rand_inds[0]]*z[rand_inds[1]],1))+ self.fudge) * (1 - 2 * self.fudge)
+        adj_pred = (self.sigmoid(torch.mm(z[rand_inds], z[rand_inds].t())) + self.fudge) * (1 - 2 * self.fudge)
+        return adj_pred
 
 
 class GAE(nn.Module):
@@ -125,8 +125,8 @@ class GAE(nn.Module):
             self.pos_indices[tuple(list(ind))] = 1
 
         # traverse 1000 known nodes, collect all 2-hops nodes
-        self.nodes_2hops, self.posi, self.negi = self.get2hopnodes(inds2hops)
-
+        self.nodes_2hops = self.get2hopnodes(inds2hops)
+        self.targets = (adj.to_dense())[self.nodes_2hops][self.nodes_2hops]
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
         # self.wt_mat = wt_mat
@@ -140,6 +140,9 @@ class GAE(nn.Module):
                 nn.ReLU(),
                 nn.Linear(out_channels,in_channels)
                 )
+
+    def getTargets(self):
+        return self.targets
 
     def get2hopnodes(self, inds2hops):
         # posIndices = self.pos_indices_list.transpose()
@@ -157,17 +160,17 @@ class GAE(nn.Module):
         #     nodeList += fstLst
         #     nodeList += scdLst
         nodeList = list(set(inds2hops))
-        nodeList = [[[nodeList[i],nodeList[j]] for i in range(len(nodeList))] for j in range(len(nodeList))]
-        pos_inds = []
-        neg_inds = []
-        for i in range(len(nodeList)):
-            indpair = nodeList[i]
-            if tuple(indpair) in self.pos_indices:
-                pos_inds.append(i)
-            else:
-                neg_inds.append(i)
-        nodeList = np.array(nodeList).transpose()
-        return nodeList, pos_inds, neg_inds
+        # nodeList = [[[nodeList[i],nodeList[j]] for i in range(len(nodeList))] for j in range(len(nodeList))]
+        # pos_inds = []
+        # neg_inds = []
+        # for i in range(len(nodeList)):
+        #     indpair = nodeList[i]
+        #     if tuple(indpair) in self.pos_indices:
+        #         pos_inds.append(i)
+        #     else:
+        #         neg_inds.append(i)
+        # nodeList = np.array(nodeList).transpose()
+        return nodeList#, pos_inds, neg_inds
 
     def getLatentEmbedding(self,x):
         return self.encoder(x)
@@ -199,26 +202,27 @@ class GAECrit(nn.Module):
         self.pos_weight = pos_weight
         self.norm = norm
 
-    def weighted_cross_entropy(self, sigmout):
-        loss = (torch.sum(- sigmout[self.posi].log()) * self.pos_weight - torch.sum((1 - sigmout[self.negi]).log()))/len(sigmout)
+    def weighted_cross_entropy(self, sigmout, targets):
+        # loss = (torch.sum(- sigmout[self.posi].log()) * self.pos_weight - torch.sum((1 - sigmout[self.negi]).log()))/len(sigmout)
         # for i in range(len(sigmout)):
         #     if i<3:
         #         loss = loss - sigmout[i].log() * self.pos_weight
         #     else:
         #         loss = loss - (1 - sigmout[i]).log()
-        return loss
-        #torch.sum(targets * -logits.log() * pos_weight + 
-                # (1 - targets) * -(1 - logits).log())
-    def BCELossOnA(self,A_pred):
+        # return loss
+        # targets = 
+        return torch.sum(targets * -logits.log() * pos_weight + 
+                (1 - targets) * -(1 - logits).log())
+    def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
-        loss = self.norm*self.weighted_cross_entropy(A_pred)
+        loss = self.norm*self.weighted_cross_entropy(A_pred,adj)
         return loss
 
     def L2LossOnX(self,x_pred,x):
         return ((x_pred - x)**2).sum() / (len(x)*len(x[0]))
     
     def forward(self,A_pred,x_pred,adj,x):
-        A_loss = self.BCELossOnA(A_pred)
+        A_loss = self.BCELossOnA(A_pred,adj)
         x_loss = self.L2LossOnX(x_pred,x)
         return A_loss, x_loss
 

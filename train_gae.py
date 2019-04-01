@@ -83,7 +83,7 @@ if __name__ == '__main__':
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
     gae = GAE(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, inds2hops, args.norm_method).cuda()
     crit = GAECrit(gae.pos_weight, gae.norm)
-
+    targets = gae.getTargets()
     print('{} nodes, {} edges'.format(n, len(edges)))
     print('word vectors:', word_vectors.shape)
     print('fc vectors:', fc_vectors.shape)
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         start = time.time()
         gae.train()
         A_pred, x_pred = gae(word_vectors)
-        lossA, lossX = crit(A_pred,x_pred,gae.adj,word_vectors)
+        lossA, lossX = crit(A_pred,x_pred,targets,word_vectors)
         loss = lossA + lossX
 
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
