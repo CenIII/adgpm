@@ -34,7 +34,7 @@ def test_on_subset(dataset, cnn, n, fc_vectors, pred_vectors, all_label,
     conseAtt = torch.matmul(feat, fc_vectors.t())  # 113x1000
 
     # softmax
-    coonseAtt = F.softmax(conseAtt,1)
+    conseAtt = F.softmax(conseAtt,1)
 
     # conseAtt x embs
     preds = torch.matmul(conseAtt,embs[:,:1000].t()) # 113x512  every image get a embs estimation
