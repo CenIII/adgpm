@@ -110,7 +110,7 @@ if __name__ == '__main__':
         gae.train()
         A_pred, x_pred = gae(word_vectors)
         lossA, lossX, error_rateA = crit(A_pred,x_pred,targets,word_vectors)
-        loss = lossA #+ lossX
+        loss = lossA + lossX
 
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         optimizer.zero_grad()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         #     loss = train_loss
         end = time.time() - start
         print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, iter_time:{:.2f}s'
-              .format(epoch, lossA.data, error_rateA.data, lossX, end))
+              .format(epoch, lossA.data, error_rateA.data, lossX.data, end))
 
         # trlog['train_loss'].append(lossA.data+lossX.data)
         # trlog['val_loss'].append(0)

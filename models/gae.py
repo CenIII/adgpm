@@ -195,7 +195,7 @@ class GAE(nn.Module):
 
         # self.rand_inds = np.array(rand_inds).transpose()
         A_pred = self.decoderA(z,self.nodes_2hops)
-        x_pred = None#self.decoderX(z)
+        x_pred = self.decoderX(z)
         return A_pred, x_pred
 
 
@@ -231,7 +231,7 @@ class GAECrit(nn.Module):
     
     def forward(self,A_pred,x_pred,adj,x):
         A_loss, error_rate = self.BCELossOnA(A_pred,adj)
-        x_loss = 0#self.L2LossOnX(x_pred,x)
+        x_loss = self.L2LossOnX(x_pred,x)
         return A_loss, x_loss, error_rate
 
         
