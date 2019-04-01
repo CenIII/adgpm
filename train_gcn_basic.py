@@ -60,7 +60,7 @@ if __name__ == '__main__':
     fc_vectors = F.normalize(fc_vectors)
 
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
-    gcn = GCN(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, args.norm_method).cuda()
+    gcn = GCN(n, edges, word_vectors.shape[1], 128, hidden_layers, args.norm_method).cuda()
 
     print('{} nodes, {} edges'.format(n, len(edges)))
     print('word vectors:', word_vectors.shape)
