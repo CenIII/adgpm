@@ -211,8 +211,9 @@ class GAECrit(nn.Module):
         #         loss = loss - (1 - sigmout[i]).log()
         # return loss
         # targets = 
-        return (torch.sum(targets * -logits.log() * self.pos_weight + 
-                (1 - targets) * -(1 - logits).log()))/len(logits)
+        print(targets.shape)
+        print('logits:'+str(logits.shape))
+        return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/len(logits)
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
         loss = self.norm*self.weighted_cross_entropy(A_pred,adj)
