@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from utils import ensure_path, set_gpu, l2_loss
 from models.gae import GAE, GAECrit
 import time
+import numpy as np
 
 def save_checkpoint(name):
     torch.save(gae.state_dict(), osp.join(save_path, name + '.pth'))
