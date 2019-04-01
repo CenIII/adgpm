@@ -107,7 +107,7 @@ class InnerProductDecoder(nn.Module):
 class GAE(nn.Module):
     """Non-probabilistic graph auto-encoder (GAE) model"""
     # out_channels: 500
-    def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in', decoder='nn'):
+    def __init__(self, n, edges, in_channels, out_channels, hidden_layers, inds2hops, norm_method='in', decoder='nn'):
         super(GAE, self).__init__()
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
         edges = np.array(edges)
@@ -125,7 +125,7 @@ class GAE(nn.Module):
             self.pos_indices[tuple(list(ind))] = 1
 
         # traverse 1000 known nodes, collect all 2-hops nodes
-        self.nodes_2hops, self.posi, self.negi = self.get2hopnodes(adj)
+        self.nodes_2hops, self.posi, self.negi = self.get2hopnodes(inds2hops)
 
         # wt_mat = adj.mul(weight)
         # wt_mat[wt_mat==0] = 1
@@ -141,22 +141,22 @@ class GAE(nn.Module):
                 nn.Linear(out_channels,in_channels)
                 )
 
-    def get2hopnodes(self, adj):
-        posIndices = self.pos_indices_list.transpose()
-        def getNeighbs(ind):
-            arginds = np.where(posIndices[0]==ind)
-            alist = list(posIndices[1][arginds])
-            return alist
-        nodeList = []
-        for i in range(1000):
-            fstLst = []
-            fstLst = getNeighbs(i)
-            scdLst = []
-            for ind in fstLst:
-                scdLst += getNeighbs(ind)
-            nodeList += fstLst
-            nodeList += scdLst
-        nodeList = list(set(nodeList))
+    def get2hopnodes(self, inds2hops):
+        # posIndices = self.pos_indices_list.transpose()
+        # def getNeighbs(ind):
+        #     arginds = np.where(posIndices[0]==ind)
+        #     alist = list(posIndices[1][arginds])
+        #     return alist
+        # nodeList = []
+        # for i in range(1000):
+        #     fstLst = []
+        #     fstLst = getNeighbs(i)
+        #     scdLst = []
+        #     for ind in fstLst:
+        #         scdLst += getNeighbs(ind)
+        #     nodeList += fstLst
+        #     nodeList += scdLst
+        nodeList = list(set(inds2hops))
         nodeList = [[[nodeList[i],nodeList[j]] for i in range(len(nodeList))] for j in range(len(nodeList))]
         pos_inds = []
         neg_inds = []

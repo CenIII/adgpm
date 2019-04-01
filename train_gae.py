@@ -41,11 +41,30 @@ if __name__ == '__main__':
     save_path = args.save_path
     ensure_path(save_path)
 
+
+
     graph = json.load(open('materials/imagenet-induced-graph.json', 'r'))
     wnids = graph['wnids']
     n = len(wnids)
     edges = graph['edges']
     
+    #################
+    test_sets = json.load(open('materials/imagenet-testsets.json', 'r'))
+    train_wnids = test_sets['train']
+    test_wnids = test_sets[args.test_set]
+    
+    def getInds(split,wnids):
+        Inds = []
+        for wnid in split:
+            ind = np.where(wnids==wnid)
+            Inds.append(ind)
+        return Inds
+
+    inds2hops = []
+    inds2hops += getInds(train_wnids, wnids)
+    ###############
+
+
     edges = edges + [(v, u) for (u, v) in edges]
     edges = edges + [(u, u) for u in range(n)]
 
@@ -60,7 +79,7 @@ if __name__ == '__main__':
     fc_vectors = F.normalize(fc_vectors)
 
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
-    gae = GAE(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, args.norm_method).cuda()
+    gae = GAE(n, edges, word_vectors.shape[1], fc_vectors.shape[1], hidden_layers, inds2hops, args.norm_method).cuda()
     crit = GAECrit(gae.pos_weight, gae.norm)
 
     print('{} nodes, {} edges'.format(n, len(edges)))
