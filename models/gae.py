@@ -219,20 +219,19 @@ class GAECrit(nn.Module):
         zzz[logits>0.5]=1.0
         zzz[logits<=0.5]=0.
         error_rate = torch.sum(torch.abs(targets-zzz))/len(logits)**2
-        print('error_rate: '+str(error_rate))
-        return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/(len(logits)**2)
+        return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/(len(logits)**2), error_rate
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
-        loss = self.norm*self.weighted_cross_entropy(A_pred,adj)
-        return loss
+        loss, error_rate = self.norm*self.weighted_cross_entropy(A_pred,adj)
+        return loss, error_rate
 
     def L2LossOnX(self,x_pred,x):
         return ((x_pred - x)**2).sum() / (len(x)*len(x[0]))
     
     def forward(self,A_pred,x_pred,adj,x):
-        A_loss = self.BCELossOnA(A_pred,adj)
+        A_loss, error_rate = self.BCELossOnA(A_pred,adj)
         x_loss = 0#self.L2LossOnX(x_pred,x)
-        return A_loss, x_loss
+        return A_loss, x_loss, error_rate
 
         
 
