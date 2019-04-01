@@ -191,7 +191,7 @@ class GAE(nn.Module):
 
         # self.rand_inds = np.array(rand_inds).transpose()
         A_pred = self.decoderA(z,self.nodes_2hops)
-        x_pred = self.decoderX(z)
+        x_pred = None#self.decoderX(z)
         return A_pred, x_pred
 
 
@@ -211,7 +211,7 @@ class GAECrit(nn.Module):
         #         loss = loss - (1 - sigmout[i]).log()
         # return loss
         # targets = 
-        return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/len(logits)
+        return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/(len(logits)**2)
     def BCELossOnA(self,A_pred,adj):
         # loss = (A_pred-adj)*wt_mat
         loss = self.norm*self.weighted_cross_entropy(A_pred,adj)
@@ -222,7 +222,7 @@ class GAECrit(nn.Module):
     
     def forward(self,A_pred,x_pred,adj,x):
         A_loss = self.BCELossOnA(A_pred,adj)
-        x_loss = self.L2LossOnX(x_pred,x)
+        x_loss = 0#self.L2LossOnX(x_pred,x)
         return A_loss, x_loss
 
         

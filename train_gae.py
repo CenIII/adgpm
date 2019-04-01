@@ -110,7 +110,7 @@ if __name__ == '__main__':
         gae.train()
         A_pred, x_pred = gae(word_vectors)
         lossA, lossX = crit(A_pred,x_pred,targets,word_vectors)
-        loss = lossA + lossX
+        loss = lossA #+ lossX
 
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         optimizer.zero_grad()
