@@ -216,8 +216,8 @@ class GAECrit(nn.Module):
         # return loss
         # targets = 
         zzz=torch.zeros_like(logits)
-        zzz[logits>0.7]=1.0
-        zzz[logits<=0.7]=0.
+        zzz[logits>0.5]=1.0
+        zzz[logits<=0.5]=0.
         error_rate = torch.sum(torch.abs(targets-zzz))/len(logits)**2
         return (torch.sum(targets * -logits.log() * self.pos_weight + (1 - targets) * -(1 - logits).log()))/(len(logits)**2), error_rate
     def BCELossOnA(self,A_pred,adj):
