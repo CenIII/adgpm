@@ -117,11 +117,11 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-        gae.eval()
+        # gae.eval()
         # output_vectors = gae(word_vectors)
         # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
-        A_pred, x_pred = gae(word_vectors)
-        lossA, lossX = crit(A_pred,x_pred,gae.adj,word_vectors)
+        # A_pred, x_pred = gae(word_vectors)
+        # lossA, lossX = crit(A_pred,x_pred,targets,word_vectors)
         # if v_val > 0:
         #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
         #     loss = val_loss
