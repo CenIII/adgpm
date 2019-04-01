@@ -57,12 +57,13 @@ if __name__ == '__main__':
     def getInds(split,wnids):
         Inds = []
         for wnid in split:
-            ind = np.where(wnids==wnid)
+            ind = wnids.index(wnid)
             Inds.append(ind)
         return Inds
 
     inds2hops = []
     inds2hops += getInds(train_wnids, wnids)
+    inds2hops += getInds(test_wnids, wnids)
     ###############
 
 
