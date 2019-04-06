@@ -200,7 +200,7 @@ class GAE(nn.Module):
         # self.rand_inds = np.array(rand_inds).transpose()
         A_pred = self.decoderA(z,self.nodes_2hops)
         x_pred = self.decoderX(z)
-        c_pred = self.decoderC(z)
+        c_pred = self.decoderC(z[:1000])
         return A_pred, x_pred, c_pred
 
 
