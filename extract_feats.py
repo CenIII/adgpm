@@ -17,10 +17,17 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
                    consider_trains):
     feats_path = 'materials/datasets/imagenet_feats/'
     subset_path = osp.join(feats_path, wnid)
-    os.makedirs(subset_path,exist_ok=True)
     top = [1, 2, 5, 10, 20]
     hits = torch.zeros(len(top)).cuda()
     tot = 0
+
+    # if dir exists then skip
+    if osp.isdir(subset_path) and osp.isfile(osp.join(subset_path, 'feats.npy')):
+        print(str(osp.join(subset_path, 'feats.npy'))+' exists, skip...')
+        return hits, tot
+
+    os.makedirs(subset_path,exist_ok=True)
+    
 
     loader = DataLoader(dataset=dataset, batch_size=32,
                         shuffle=False, num_workers=2)
