@@ -107,7 +107,7 @@ class InnerProductDecoder(nn.Module):
 class GAE(nn.Module):
     """Non-probabilistic graph auto-encoder (GAE) model"""
     # out_channels: 500
-    def __init__(self, n, edges, in_channels, out_channels, hidden_layers, inds2hops, norm_method='in', decoder='nn'):
+    def __init__(self, n, edges, in_channels, out_channels, fc_dim, hidden_layers, inds2hops, norm_method='in', decoder='nn'):
         super(GAE, self).__init__()
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
         edges = np.array(edges)
@@ -143,6 +143,10 @@ class GAE(nn.Module):
                 nn.Linear(out_channels,out_channels),
                 nn.ReLU(),
                 nn.Linear(out_channels,in_channels)
+                )
+        self.decoderC = nn.Sequential(
+                nn.Linear(out_channels,out_channels),
+                nn.Linear(out_channels,fc_dim)
                 )
 
     def getTargets(self):
@@ -196,7 +200,8 @@ class GAE(nn.Module):
         # self.rand_inds = np.array(rand_inds).transpose()
         A_pred = self.decoderA(z,self.nodes_2hops)
         x_pred = self.decoderX(z)
-        return A_pred, x_pred
+        c_pred = self.decoderC(z)
+        return A_pred, x_pred, c_pred
 
 
 class GAECrit(nn.Module):
@@ -227,12 +232,15 @@ class GAECrit(nn.Module):
         return loss, error_rate
 
     def L2LossOnX(self,x_pred,x):
-        return ((x_pred - x)**2).sum() / (len(x))
+        return ((x_pred - x)**2).sum() / (len(x) * 2)
+    def L2LossOnC(self,c_pred,c):
+        return ((c_pred - c)**2).sum() / (len(c) * 2)
     
-    def forward(self,A_pred,x_pred,adj,x):
+    def forward(self,A_pred,x_pred,c_pred,adj,x,c):
         A_loss, error_rate = self.BCELossOnA(A_pred,adj)
         x_loss = self.L2LossOnX(x_pred,x)
-        return A_loss, x_loss, error_rate
+        c_loss = self.L2LossOnC(c_pred,c)
+        return A_loss, x_loss, c_loss, error_rate
 
         
 

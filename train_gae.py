@@ -81,7 +81,7 @@ if __name__ == '__main__':
     fc_vectors = F.normalize(fc_vectors)
 
     hidden_layers = args.layers #'d2048,d' #'2048,2048,1024,1024,d512,d'
-    gae = GAE(n, edges, word_vectors.shape[1], 512, hidden_layers, inds2hops, args.norm_method).cuda()  #fc_vectors.shape[1]
+    gae = GAE(n, edges, word_vectors.shape[1], 512,fc_vectors.shape[1], hidden_layers, inds2hops, args.norm_method).cuda()  #fc_vectors.shape[1]
     crit = GAECrit(gae.pos_weight, gae.norm).cuda()
     targets = gae.getTargets().cuda()
     print('{} nodes, {} edges'.format(n, len(edges)))
@@ -108,9 +108,9 @@ if __name__ == '__main__':
     for epoch in range(1, args.max_epoch + 1):
         start = time.time()
         gae.train()
-        A_pred, x_pred = gae(word_vectors)
-        lossA, lossX, error_rateA = crit(A_pred,x_pred,targets,word_vectors)
-        loss = lossA + lossX
+        A_pred, x_pred, c_pred = gae(word_vectors)
+        lossA, lossX, lossC, error_rateA = crit(A_pred,x_pred,c_pred,targets,word_vectors,fc_vectors)
+        loss = lossA + lossX + lossC
 
         # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
         optimizer.zero_grad()
@@ -129,8 +129,8 @@ if __name__ == '__main__':
         #     val_loss = 0
         #     loss = train_loss
         end = time.time() - start
-        print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, iter_time:{:.2f}s'
-              .format(epoch, lossA.data, error_rateA.data, lossX.data, end))
+        print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, C_loss:{:.4f}, iter_time:{:.2f}s'
+              .format(epoch, lossA.data, error_rateA.data, lossX.data, lossC.data, end))
 
         # trlog['train_loss'].append(lossA.data+lossX.data)
         # trlog['val_loss'].append(0)
