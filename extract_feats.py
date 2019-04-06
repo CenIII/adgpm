@@ -8,10 +8,11 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.resnet import make_resnet50_base
-from datasets.imagenet import ImageNet
+from datasets.imagenet_bak import ImageNet
 from utils import set_gpu, pick_vectors
 
 import numpy as np
+import random
 
 def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
                    consider_trains):
@@ -22,7 +23,7 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
     tot = 0
 
     # if dir exists then skip
-    if osp.isdir(subset_path) and osp.isfile(osp.join(subset_path, 'feats.npy')):
+    if osp.isdir(subset_path):# and osp.isfile(osp.join(subset_path, 'feats.npy')):
         print(str(osp.join(subset_path, 'feats.npy'))+' exists, skip...')
         return hits, tot
 
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     test_sets = json.load(open('materials/imagenet-testsets.json', 'r'))
     train_wnids = test_sets['train']
     test_wnids = test_sets[args.test_set]
-
+    random.shuffle(test_wnids)
     print('test set: {}, {} classes, ratio={}'
           .format(args.test_set, len(test_wnids), args.keep_ratio))
     print('consider train classifiers: {}'.format(args.consider_trains))
