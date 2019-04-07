@@ -32,9 +32,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--max-epoch', type=int, default=5000)
     parser.add_argument('--trainval', default='10,0')
-    parser.add_argument('--lr', type=float, default=0.005)
+    parser.add_argument('--lr', type=float, default=0.0001)
     parser.add_argument('--weight-decay', type=float, default=0.0005)
-    parser.add_argument('--save-epoch', type=int, default=3000)
+    parser.add_argument('--save-epoch', type=int, default=5)
     parser.add_argument('--save-path', default='save/gcn-basic')
 
     parser.add_argument('--gpu', default='0')
@@ -97,8 +97,8 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/')
-    loader = DataLoader(dataset=dataset, batch_size=2048,
-                        shuffle=False, num_workers=2)
+    loader = DataLoader(dataset=dataset, batch_size=128,
+                        shuffle=True, num_workers=2)
 
     logger = open(osp.join(save_path,'loss_history'),'w')
 
@@ -151,8 +151,8 @@ if __name__ == '__main__':
                 'pred': output_vectors
             }
 
-        # if epoch == args.save_epoch:
-        save_checkpoint('epoch-{}'.format(epoch))
+        if if epoch > 0 and epoch % args.save_epoch==0:
+            save_checkpoint('epoch-{}'.format(epoch))
         
         pred_obj = None
 

@@ -76,7 +76,7 @@ class GCN(nn.Module):
 
             last_c = c
 
-        conv = GraphConv(last_c, out_channels, relu=False, dropout=dropout_last)
+        conv = GraphConv(last_c, out_channels, relu=True, dropout=dropout_last)
         self.add_module('conv-last', conv)
         layers.append(conv)
 
@@ -85,5 +85,5 @@ class GCN(nn.Module):
     def forward(self, x):
         for conv in self.layers:
             x = conv(x, self.adj)
-        return F.normalize(x)
+        return x #F.normalize(x)
 
