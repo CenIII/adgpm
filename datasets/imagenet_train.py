@@ -18,18 +18,23 @@ class ImageNetFeatsTrain(Dataset):
         self.path = path
         self.wnid_list = wnid_list # os.listdir(self.path)
         self.npyfile_list = []
-        print('start')
-        for wnid in self.wnid_list:
-            wnid_path = os.path.join(self.path,wnid)
-            npy_list = os.listdir(wnid_path)
-            if 'feats.npy' in npy_list:
-                npy_list.remove('feats.npy')
-            for i in range(len(npy_list)):
-                npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
-            self.npyfile_list += npy_list  # path, wnid
-        print('dump')
-        with open('npyfile_list.pkl','wb') as f:
-            pickle.dump(self.npyfile_list,f)
+        # print('start')
+
+        # for wnid in self.wnid_list:
+        #     wnid_path = os.path.join(self.path,wnid)
+        #     npy_list = os.listdir(wnid_path)
+        #     if 'feats.npy' in npy_list:
+        #         npy_list.remove('feats.npy')
+        #     for i in range(len(npy_list)):
+        #         npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
+        #     self.npyfile_list += npy_list  # path, wnid
+        
+        with open('./save/npyfile_list.pkl','rb') as f:
+            self.npyfile_list = pickle.load(f)
+
+        # print('dump')
+        # with open('npyfile_list.pkl','wb') as f:
+        #     pickle.dump(self.npyfile_list,f)
     # def get_subset(self, wnid):
     #     if wnid not in self.wnid_list:
     #         print("Subset "+str(wnid)+" not exist.")
