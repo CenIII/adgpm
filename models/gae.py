@@ -232,9 +232,9 @@ class GAECrit(nn.Module):
         return loss, error_rate
 
     def L2LossOnX(self,x_pred,x):
-        return ((x_pred - x)**2).sum() / (len(x) * 2)
+        return ((x_pred - x)**2).sum() / (len(x))
     def L2LossOnC(self,c_pred,c):
-        return ((c_pred - c)**2).sum() / (len(c) * 2)
+        return ((c_pred - c)**2).sum() / (len(c))
     
     def forward(self,A_pred,x_pred,c_pred,adj,x,c):
         A_loss, error_rate = self.BCELossOnA(A_pred,adj)
