@@ -10,6 +10,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torchvision import get_image_backend
 import numpy as np
+import pickle
 
 
 class ImageNetFeatsTrain(Dataset):
@@ -21,7 +22,7 @@ class ImageNetFeatsTrain(Dataset):
 
         with open('./save/npyfile_list.pkl','rb') as f:
             self.npyfile_list = pickle.load(f)
-            
+
         # for wnid in self.wnid_list:
         #     wnid_path = os.path.join(self.path,wnid)
         #     npy_list = os.listdir(wnid_path)
