@@ -92,7 +92,7 @@ if __name__ == '__main__':
     pred_file = torch.load(args.semantic_embs)
     pred_wnids = pred_file['wnids']
     word_vectors = pred_file['pred']
-    word_vectors = torch.tensor(word_vectors).cuda()
+    word_vectors = word_vectors.cuda()
     word_vectors = F.normalize(word_vectors)
 
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
-    dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/')
+    dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
     loader = DataLoader(dataset=dataset, batch_size=100,
                         shuffle=False, num_workers=2)
 

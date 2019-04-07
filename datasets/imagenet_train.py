@@ -14,9 +14,9 @@ import numpy as np
 
 class ImageNetFeatsTrain(Dataset):
 
-    def __init__(self, path): # imagenet_feats
+    def __init__(self, path, wnid_list): # imagenet_feats
         self.path = path
-        self.wnid_list = os.listdir(self.path)
+        self.wnid_list = wnid_list # os.listdir(self.path)
         self.npyfile_list = []
         for wnid in self.wnid_list:
             wnid_path = os.path.join(self.path,wnid)
