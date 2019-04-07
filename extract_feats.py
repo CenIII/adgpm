@@ -13,24 +13,22 @@ from utils import set_gpu, pick_vectors
 
 import numpy as np
 import random
+import time
 
 def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
                    consider_trains):
     feats_path = 'materials/datasets/imagenet_feats/'
     subset_path = osp.join(feats_path, wnid)
-    top = [1, 2, 5, 10, 20]
-    hits = torch.zeros(len(top)).cuda()
-    tot = 0
 
     # if dir exists then skip
-    if osp.isdir(subset_path):# and osp.isfile(osp.join(subset_path, 'feats.npy')):
+    if osp.isdir(subset_path) and osp.isfile(osp.join(subset_path, 'feats.npy')):
         print(str(osp.join(subset_path, 'feats.npy'))+' exists, skip...')
-        return hits, tot
-
-    os.makedirs(subset_path,exist_ok=True)
+        return 0, 0
+    
+    subset = dataset.get_subset(wnid)
     
 
-    loader = DataLoader(dataset=dataset, batch_size=32,
+    loader = DataLoader(dataset=subset, batch_size=32,
                         shuffle=False, num_workers=2)
 
     # count = 0
@@ -43,9 +41,11 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
         feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
         feat_all.append(feat.data.cpu().numpy())
     feat_np = np.concatenate(feat_all,axis=0)
+    os.makedirs(subset_path,exist_ok=True)
     np.save(osp.join(subset_path, 'feats.npy'),feat_np)
-    tot = 10        
-
+    
+    hit = 1
+    numImgs = len(feat_np)
         # fcs = pred_vectors.t()
 
         # table = torch.matmul(feat, fcs)
@@ -61,7 +61,7 @@ def test_on_subset(dataset, cnn, wnid, n, pred_vectors, all_label,
         #     hits[i] += (rks <= k).sum().item()
         # tot += len(data)
 
-    return hits, tot
+    return hit, numImgs
 
 
 if __name__ == '__main__':
@@ -135,21 +135,20 @@ if __name__ == '__main__':
             print('x{}({})'.format(tot, s_tot))
     else:
         count = 0
+        start = time.time()
+        shits = 0
         for i, wnid in enumerate(test_wnids, 1):
-            subset = dataset.get_subset(wnid)
-            hits, tot = test_on_subset(subset, cnn, wnid, n, pred_vectors, n + i - 1,
+            hit, numImgs  = test_on_subset(dataset, cnn, wnid, n, pred_vectors, n + i - 1,
                                        consider_trains=args.consider_trains)
-            results[wnid] = (hits / tot).tolist()
 
-            s_hits += hits
-            s_tot += tot
+            shits += hit
 
-            print('{}/{}, {}:'.format(i, len(test_wnids), wnid), end=' ')
-            for i in range(len(hits)):
-                print('{:.0f}%({:.2f}%)'
-                      .format(hits[i] / tot * 100, s_hits[i] / s_tot * 100), end=' ')
-            print('x{}({})'.format(tot, s_tot))
-
+            print('{}/{}, {},'.format(i, len(test_wnids), wnid), end=' ')
+            print('actual hits: '+str(shits)+', num imgs: '+str(numImgs), end=' ')
+            end = time.time()
+            print(', period: '+str(np.round(end-start,3)))
+            start = end
+            
     print('summary:', end=' ')
     for s_hit in s_hits:
         print('{:.2f}%'.format(s_hit / s_tot * 100), end=' ')
