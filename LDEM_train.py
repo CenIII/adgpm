@@ -136,8 +136,8 @@ if __name__ == '__main__':
     trlog['min_loss'] = 0
 
     dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
-    loader = DataLoader(dataset=dataset, batch_size=100,
-                        shuffle=False, num_workers=2)
+    loader = DataLoader(dataset=dataset, batch_size=128,
+                        shuffle=True, num_workers=2)
 
     logger = open(osp.join(save_path,'loss_history'),'w')
 
