@@ -5,7 +5,7 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
-
+import torch.nn as nn
 from utils import ensure_path, set_gpu, l2_loss
 # from models.gcn import GCN
 from datasets.imagenet_train import ImageNetFeatsTrain
@@ -44,8 +44,10 @@ class LDEM(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        self.net.weights.data.normal_(0.2)
-        self.net.bias.data.fill_(0)
+        self.net[0].weight.data.normal_(0.2)
+        self.net[0].bias.data.fill_(0)
+        self.net[2].weight.data.normal_(0.2)
+        self.net[2].bias.data.fill_(0)
         return None
 
     def forward(self,x):
