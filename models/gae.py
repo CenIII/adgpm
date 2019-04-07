@@ -85,7 +85,7 @@ class GCN(nn.Module):
     def forward(self, x):
         for conv in self.layers:
             x = conv(x, self.adj)
-        return F.normalize(x)
+        return x #F.normalize(x)
 
 class InnerProductDecoder(nn.Module):
     """Decoder for using inner product for prediction."""
