@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torchvision import get_image_backend
 import numpy as np
-
+import pickle
 
 class ImageNetFeatsTrain(Dataset):
 
@@ -18,6 +18,7 @@ class ImageNetFeatsTrain(Dataset):
         self.path = path
         self.wnid_list = wnid_list # os.listdir(self.path)
         self.npyfile_list = []
+        print('start')
         for wnid in self.wnid_list:
             wnid_path = os.path.join(self.path,wnid)
             npy_list = os.listdir(wnid_path)
@@ -26,7 +27,9 @@ class ImageNetFeatsTrain(Dataset):
             for i in range(len(npy_list)):
                 npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
             self.npyfile_list += npy_list  # path, wnid
-    
+        print('dump')
+        with open('npyfile_list.pkl','wb') as f:
+            pickle.dump(self.npyfile_list,f)
     # def get_subset(self, wnid):
     #     if wnid not in self.wnid_list:
     #         print("Subset "+str(wnid)+" not exist.")
