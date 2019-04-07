@@ -92,6 +92,7 @@ if __name__ == '__main__':
     pred_file = torch.load(args.semantic_embs)
     pred_wnids = pred_file['wnids']
     word_vectors = pred_file['pred']
+    word_vectors.requires_grad = False
     word_vectors = word_vectors.cuda()
     word_vectors = F.normalize(word_vectors)
 
