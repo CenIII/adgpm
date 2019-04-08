@@ -77,7 +77,8 @@ if __name__ == '__main__':
     pred_vectors = pred_file['pred']
     pred_dic = dict(zip(pred_wnids, pred_vectors))
     pred_vectors = pick_vectors(pred_dic, train_wnids + test_wnids, is_tensor=True).cuda()
-
+    
+    pred_vectors = F.normalize(pred_vectors, dim=1)
     pred_vectors = pred_vectors.cuda()
 
     n = len(train_wnids)
