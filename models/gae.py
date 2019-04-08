@@ -153,21 +153,21 @@ class GAE(nn.Module):
         return self.targets
 
     def get2hopnodes(self, inds2hops):
-        posIndices = self.pos_indices_list.transpose()
-        def getNeighbs(ind):
-            arginds = np.where(posIndices[0]==ind)
-            alist = list(posIndices[1][arginds])
-            return alist
-        nodeList = []
-        for i in range(1000):
-            fstLst = []
-            fstLst = getNeighbs(i)
-            scdLst = []
-            for ind in fstLst:
-                scdLst += getNeighbs(ind)
-            nodeList += fstLst
-            nodeList += scdLst
-        nodeList = list(set(nodeList))
+        # posIndices = self.pos_indices_list.transpose()
+        # def getNeighbs(ind):
+        #     arginds = np.where(posIndices[0]==ind)
+        #     alist = list(posIndices[1][arginds])
+        #     return alist
+        # nodeList = []
+        # for i in range(1000):
+        #     fstLst = []
+        #     fstLst = getNeighbs(i)
+        #     scdLst = []
+        #     for ind in fstLst:
+        #         scdLst += getNeighbs(ind)
+        #     nodeList += fstLst
+        #     nodeList += scdLst
+        nodeList = list(inds2hops)# list(set(nodeList))
         # nodeList = [[[nodeList[i],nodeList[j]] for i in range(len(nodeList))] for j in range(len(nodeList))]
         # pos_inds = []
         # neg_inds = []
