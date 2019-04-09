@@ -105,6 +105,7 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
+
     for epoch in range(1, args.max_epoch + 1):
         start = time.time()
         gae.train()
