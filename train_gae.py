@@ -156,7 +156,7 @@ if __name__ == '__main__':
         save_checkpoint('epoch-{}'.format(epoch),gae)
 
         # update A.
-        # save A
+        # save A_pred
         next_edges = updateA(A_pred_0,A_pred_1,gae.adj)
         gae.updateADJInfo(next_edges)
         save_edges(next_edges)

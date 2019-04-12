@@ -44,7 +44,7 @@ class GCN(nn.Module):
     def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in'):
         super().__init__()
 
-        self.updateADJ(edges)
+        self.updateADJ(edges,n)
 
         hl = hidden_layers.split(',')
         if hl[-1] == 'd':
@@ -77,11 +77,11 @@ class GCN(nn.Module):
 
         self.layers = layers
 
-    def updateADJ(self,edges):
+    def updateADJ(self,edges,n):
         edges = np.array(edges)
         adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
                             shape=(n, n), dtype='float32')
-        adj = normt_spm(adj, method=norm_method)
+        adj = normt_spm(adj, method='in')
         adj = spm_to_tensor(adj)
         self.adj = adj.cuda()
 
@@ -113,7 +113,8 @@ class GAE(nn.Module):
     # out_channels: 500
     def __init__(self, n, edges, in_channels, out_channels, fc_dim, hidden_layers, inds2hops, norm_method='in', decoder='nn'):
         super(GAE, self).__init__()
-
+        self.n = n
+        self.inds2hops = inds2hops
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
 
         self.decoderA = InnerProductDecoder(0.3)
@@ -133,6 +134,7 @@ class GAE(nn.Module):
         self.updateADJInfo(edges)
 
     def updateADJInfo(self,edges):
+        n = self.n
         edges = np.array(edges)
         adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
                             shape=(n, n), dtype='float32')
@@ -150,15 +152,15 @@ class GAE(nn.Module):
             self.pos_indices[tuple(list(ind))] = 1
 
         # traverse 1000 known nodes, collect all 2-hops nodes
-        self.nodes_2hops = self.get2hopnodes(inds2hops)
+        self.nodes_2hops = self.get2hopnodes(self.inds2hops)
         self.targets = (adj.to_dense())[self.nodes_2hops][:,self.nodes_2hops]
         t_N = len(self.targets)
         t_n_edges = torch.sum(self.targets)
         self.pos_weight = (t_N*t_N - t_n_edges)/t_n_edges
         self.norm = t_N*t_N / float((t_N*t_N - t_n_edges) * 2)
 
-        self.encoder.updateADJ(edges)
-        self.decoderX.updateADJ(edges)
+        self.encoder.updateADJ(edges,n)
+        self.decoderX.updateADJ(edges,n)
 
     def getTargets(self):
         return self.targets
