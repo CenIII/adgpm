@@ -66,7 +66,7 @@ if __name__ == '__main__':
     #################
     test_sets = json.load(open('materials/imagenet-testsets.json', 'r'))
     train_wnids = test_sets['train']
-    test_wnids = test_sets['3-hops']
+    test_wnids = test_sets['2-hops']
     
     def getInds(split,wnids):
         Inds = []
