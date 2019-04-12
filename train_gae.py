@@ -11,7 +11,11 @@ from models.gae import GAE, GAECrit
 import time
 import numpy as np
 
-def save_checkpoint(name):
+def save_checkpoint(name,gae):
+    pred_obj = {
+                    'wnids': wnids,
+                    'pred': gae.getLatentEmbedding(word_vectors)#output_vectors
+                }
     torch.save(gae.state_dict(), osp.join(save_path, name + '.pth'))
     torch.save(pred_obj, osp.join(save_path, name + '.pred'))
 
@@ -19,6 +23,16 @@ def save_checkpoint(name):
 def mask_l2_loss(a, b, mask):
     return l2_loss(a[mask], b[mask])
 
+
+def updateA(A_pred_0,A_pred_1,adj):
+    next_edges = None
+    pass
+    return next_edges
+
+
+def save_edges():
+
+    pass
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -105,50 +119,64 @@ if __name__ == '__main__':
     trlog['val_loss'] = []
     trlog['min_loss'] = 0
 
-    for epoch in range(1, args.max_epoch + 1):
-        start = time.time()
-        gae.train()
-        A_pred, x_pred, c_pred = gae(word_vectors)
-        lossA, lossX, lossC, error_rateA = crit(A_pred,x_pred,c_pred,targets,word_vectors,fc_vectors)
-        loss = lossA + lossX + lossC
+    def train_gae(involveXC=False, numiters=400):
+        for epoch in range(1, numiters + 1):
+            start = time.time()
+            gae.train()
+            A_pred, x_pred, c_pred = gae(word_vectors)
+            lossA, lossX, lossC, error_rateA = crit(A_pred,x_pred,c_pred,targets,word_vectors,fc_vectors)
+            
+            loss = lossA# + lossX + lossC
+            if involveXC:
+                loss += lossX + lossC
 
-        # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            # loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train])
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        # gae.eval()
-        # output_vectors = gae(word_vectors)
-        # train_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[:n_train]).item()
-        # A_pred, x_pred = gae(word_vectors)
-        # lossA, lossX = crit(A_pred,x_pred,targets,word_vectors)
-        # if v_val > 0:
-        #     val_loss = mask_l2_loss(output_vectors, fc_vectors, tlist[n_train:]).item()
-        #     loss = val_loss
-        # else:
-        #     val_loss = 0
-        #     loss = train_loss
-        end = time.time() - start
-        print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, C_loss:{:.4f}, iter_time:{:.2f}s'
-              .format(epoch, lossA.data, error_rateA.data, lossX.data, lossC.data, end))
+            end = time.time() - start
+            print('epoch {}, A_loss={:.4f}, A_error_rate={:.4f}, X_loss:{:.4f}, C_loss:{:.4f}, iter_time:{:.2f}s'
+                  .format(epoch, lossA.data, error_rateA.data, lossX.data, lossC.data, end))
 
-        # trlog['train_loss'].append(lossA.data+lossX.data)
-        # trlog['val_loss'].append(0)
-        # trlog['min_loss'] = min_loss
-        # torch.save(trlog, osp.join(save_path, 'trlog'))
+        return A_pred
 
-        if (epoch == args.save_epoch):
-            if args.no_pred:
-                pred_obj = None
-            else:
-                pred_obj = {
-                    'wnids': wnids,
-                    'pred': gae.getLatentEmbedding(word_vectors)#output_vectors
-                }
+    # outer for loop
+    outIterNum = 2
+    for outiter in range(outIterNum):
+        # train A
+        # save Z
+        A_pred_0 = train_gae(involveXC=False,numiters=args.save_epoch)
+        torch.save(A_pred_0,osp.join(save_path,'A_pred_0.pt'))
 
-        if epoch == args.save_epoch:
-            save_checkpoint('epoch-{}'.format(epoch))
-            break
-        
-        pred_obj = None
+        # train A+C
+        # save Z
+        A_pred_1 = train_gae(involveXC=True,numiters=args.save_epoch)
+        torch.save(A_pred_1,osp.join(save_path,'A_pred_1.pt'))
+        save_checkpoint('epoch-{}'.format(epoch),gae)
+
+        # update A.
+        # save A
+        next_edges = updateA(A_pred_0,A_pred_1,gae.adj)
+        gae.updateADJInfo(next_edges)
+        save_edges(next_edges)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
 
