@@ -153,7 +153,7 @@ if __name__ == '__main__':
         # save Z
         A_pred_1 = train_gae(involveXC=True,numiters=args.save_epoch)
         torch.save(A_pred_1,osp.join(save_path,'A_pred_1.pt'))
-        save_checkpoint('epoch-{}'.format(epoch),gae)
+        save_checkpoint('epoch-{}'.format(args.save_epoch),gae)
 
         # update A.
         # save A_pred
