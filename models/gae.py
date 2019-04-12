@@ -111,13 +111,14 @@ class InnerProductDecoder(nn.Module):
 class GAE(nn.Module):
     """Non-probabilistic graph auto-encoder (GAE) model"""
     # out_channels: 500
-    def __init__(self, n, edges, in_channels, out_channels, fc_dim, hidden_layers, inds2hops, norm_method='in', decoder='nn'):
+    def __init__(self, n, edges, in_channels, out_channels, fc_dim, hidden_layers, inds2hops, norm_method='in', decoder='gcn'):
         super(GAE, self).__init__()
         self.n = n
         self.inds2hops = inds2hops
         self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
 
         self.decoderA = InnerProductDecoder(0.3)
+        self.decoderType = decoder
         if decoder == 'gcn':
             self.decoderX = GCN(n, edges, out_channels, in_channels, hidden_layers, norm_method=norm_method)
         else:
@@ -160,7 +161,8 @@ class GAE(nn.Module):
         self.norm = t_N*t_N / float((t_N*t_N - t_n_edges) * 2)
 
         self.encoder.updateADJ(edges,n)
-        self.decoderX.updateADJ(edges,n)
+        if self.decoderType=='gcn':
+            self.decoderX.updateADJ(edges,n)
 
     def getTargets(self):
         return self.targets
