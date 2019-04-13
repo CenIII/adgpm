@@ -29,6 +29,7 @@ def updateADJCoo(A_pred_0,A_pred_1,adj_coo,inds2hops,n):
 
     A_pred_0 = A_pred_0.cpu().detach().numpy() 
     A_pred_1 = A_pred_1.cpu().detach().numpy() 
+    inds2hops = np.array(inds2hops)
     diff = A_pred_1 - A_pred_0
     booldiff = np.zeros_like(diff)
     booldiff[diff>0.095]=1
@@ -38,6 +39,7 @@ def updateADJCoo(A_pred_0,A_pred_1,adj_coo,inds2hops,n):
     diff_values = diff[indices]
 
     # convert indices to real indices via inds2hops
+    indices = np.array(indices)
     indices[0] = inds2hops[indices[0]]
     indices[1] = inds2hops[indices[1]]
     # update adj_coo. 
