@@ -162,8 +162,8 @@ class GAE(nn.Module):
         self.norm = t_N*t_N / float((t_N*t_N - t_n_edges) * 2)
 
         
-    def updateADJInfo(self,edges,values=None):
-        self.initADJInfo(edges,values)
+    def updateADJInfo(self,adj_coo):
+        self.initADJInfo(adj_coo)
         self.encoder.updateADJ(self.adj_coo)
         if self.decoderType=='gcn':
             self.decoderX.updateADJ(self.adj_coo)
