@@ -10,6 +10,7 @@ from utils import ensure_path, set_gpu, l2_loss
 from models.gae import GAE, GAECrit
 import time
 import numpy as np
+import scipy.sparse as sp
 
 def save_checkpoint(name,gae):
     pred_obj = {
@@ -24,15 +25,47 @@ def mask_l2_loss(a, b, mask):
     return l2_loss(a[mask], b[mask])
 
 
-def updateA(A_pred_0,A_pred_1,adj):
-    next_edges = None
-    pass
-    return next_edges
+def updateADJCoo(A_pred_0,A_pred_1,adj_coo,inds2hops,n):
+
+    diff = A_pred_1 - A_pred_0
+    booldiff = np.zeros_like(diff)
+    booldiff[diff>0.095]=1
+    numUpdates = np.sum(booldiff)
+    print('Num of links need to update: '+str(numUpdates))
+    indices = np.where(booldiff==1) # row: indices[0], col: indices[1]
+    diff_values = diff[indices]
+
+    # convert indices to real indices via inds2hops
+    indices[0] = inds2hops[indices[0]]
+    indices[1] = inds2hops[indices[1]]
+    # update adj_coo. 
+    row = adj_coo.row
+    col = adj_coo.col
+    val = adj_coo.data
+    orig_inds = np.stack((row,col), axis=1) # (32544, 2)
+
+    val_dict = {tuple(orig_inds[i]):val[i] for i in range(len(row))}
+
+    indices = indices.transpose()
+
+    for i in range(len(indices)):
+        ind = indices[i]
+        orig_val = val_dict.setdefault(tuple(ind),0.)
+        val_dict[tuple(ind)] = min(diff_values[i]+orig_val,1.0)
+    
+    updated_inds = np.array(list(val_dict.keys())).transpose() # row: indices[0], col: indices[1]
+    updated_vals = np.array(list(val_dict.values()))
+    
+    next_adj_coo = sp.coo_matrix((updated_vals, (updated_inds[0], updated_inds[1])),
+                            shape=(n, n), dtype='float32')
+    
+    return next_adj_coo
 
 
-def save_edges():
-
-    pass
+def save_adj_coo(adj_coo,itr):
+    scipy.sparse.save_npz(osp.join(save_path,'adj_coo_'+str(itr)+'.npz'), adj_coo)
+    # sparse_matrix = scipy.sparse.load_npz('/tmp/sparse_matrix.npz')
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -157,9 +190,9 @@ if __name__ == '__main__':
 
         # update A.
         # save A_pred
-        next_edges = updateA(A_pred_0,A_pred_1,gae.adj)
-        gae.updateADJInfo(next_edges)
-        save_edges(next_edges)
+        next_adj_coo = updateADJCoo(A_pred_0,A_pred_1,gae.adj_coo,inds2hops,n)
+        gae.updateADJInfo(next_adj_coo)
+        save_adj_coo(next_adj_coo,outiter)
 
 
 

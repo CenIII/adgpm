@@ -41,10 +41,10 @@ class GraphConv(nn.Module):
 
 class GCN(nn.Module):
 
-    def __init__(self, n, edges, in_channels, out_channels, hidden_layers, norm_method='in'):
+    def __init__(self, adj_coo, in_channels, out_channels, hidden_layers, norm_method='in'):
         super().__init__()
 
-        self.updateADJ(edges,n)
+        self.updateADJ(adj_coo)
 
         hl = hidden_layers.split(',')
         if hl[-1] == 'd':
@@ -77,11 +77,11 @@ class GCN(nn.Module):
 
         self.layers = layers
 
-    def updateADJ(self,edges,n):
-        edges = np.array(edges)
-        adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
-                            shape=(n, n), dtype='float32')
-        adj = normt_spm(adj, method='in')
+    def updateADJ(self,adj_coo):
+        # edges = np.array(edges)
+        # adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
+        #                     shape=(n, n), dtype='float32')
+        adj = normt_spm(adj_coo, method='in')
         adj = spm_to_tensor(adj)
         self.adj = adj.cuda()
 
@@ -115,12 +115,19 @@ class GAE(nn.Module):
         super(GAE, self).__init__()
         self.n = n
         self.inds2hops = inds2hops
-        self.encoder = GCN(n, edges, in_channels, out_channels, hidden_layers, norm_method=norm_method)
+        # self.edges = edges
+        edges = np.array(edges)
+        edge_vals = np.ones(len(edges))# if values is None else values
+        adj_coo = sp.coo_matrix((edge_vals, (edges[:, 0], edges[:, 1])),
+                            shape=(n, n), dtype='float32')
+        self.initADJInfo(adj_coo)
+
+        self.encoder = GCN(adj_coo, in_channels, out_channels, hidden_layers, norm_method=norm_method)
 
         self.decoderA = InnerProductDecoder(0.3)
         self.decoderType = decoder
         if decoder == 'gcn':
-            self.decoderX = GCN(n, edges, out_channels, in_channels, hidden_layers, norm_method=norm_method)
+            self.decoderX = GCN(adj_coo, out_channels, in_channels, hidden_layers, norm_method=norm_method)
         else:
             self.decoderX = nn.Sequential(
                 nn.Linear(out_channels,out_channels),
@@ -132,25 +139,19 @@ class GAE(nn.Module):
                 nn.Linear(out_channels,fc_dim)
                 )
 
-        self.updateADJInfo(edges)
+        
 
-    def updateADJInfo(self,edges):
-        n = self.n
-        edges = np.array(edges)
-        adj = sp.coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])),
-                            shape=(n, n), dtype='float32')
-        adj = spm_to_tensor(adj)
-
-        self.adj = adj
-
+    def initADJInfo(self,adj_coo): # values is a np.array of values for every edge in edges
+        self.adj_coo = adj_coo
+        adj = spm_to_tensor(adj_coo)
         N = len(adj)
-        n_edges = torch.sparse.sum(adj)
+        n_edges = len(edges)#torch.sparse.sum(adj)
         self.pos_weight = (N*N - n_edges)/n_edges
         self.norm = N*N / float((N*N - n_edges) * 2)
-        self.pos_indices_list = self.adj._indices().t().data.numpy()
-        self.pos_indices = {}
-        for ind in self.pos_indices_list:
-            self.pos_indices[tuple(list(ind))] = 1
+        # self.pos_indices_list = self.adj._indices().t().data.numpy()
+        # self.pos_indices = {}
+        # for ind in self.pos_indices_list:
+        #     self.pos_indices[tuple(list(ind))] = 1
 
         # traverse 1000 known nodes, collect all 2-hops nodes
         self.nodes_2hops = self.get2hopnodes(self.inds2hops)
@@ -160,9 +161,12 @@ class GAE(nn.Module):
         self.pos_weight = (t_N*t_N - t_n_edges)/t_n_edges
         self.norm = t_N*t_N / float((t_N*t_N - t_n_edges) * 2)
 
-        self.encoder.updateADJ(edges,n)
+        
+    def updateADJInfo(self,edges,values=None):
+        self.initADJInfo(edges,values)
+        self.encoder.updateADJ(self.adj_coo)
         if self.decoderType=='gcn':
-            self.decoderX.updateADJ(edges,n)
+            self.decoderX.updateADJ(self.adj_coo)
 
     def getTargets(self):
         return self.targets
