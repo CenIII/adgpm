@@ -67,7 +67,7 @@ def updateADJCoo(A_pred_0,A_pred_1,adj_coo,inds2hops,n):
 
 
 def save_adj_coo(adj_coo,itr):
-    scipy.sparse.save_npz(osp.join(save_path,'adj_coo_'+str(itr)+'.npz'), adj_coo)
+    sp.save_npz(osp.join(save_path,'adj_coo_'+str(itr)+'.npz'), adj_coo)
     # sparse_matrix = scipy.sparse.load_npz('/tmp/sparse_matrix.npz')
     
 
