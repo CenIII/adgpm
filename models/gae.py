@@ -145,7 +145,7 @@ class GAE(nn.Module):
         self.adj_coo = adj_coo
         adj = spm_to_tensor(adj_coo)
         N = len(adj)
-        n_edges = len(edges)#torch.sparse.sum(adj)
+        n_edges = len(adj_coo.row)#torch.sparse.sum(adj)
         self.pos_weight = (N*N - n_edges)/n_edges
         self.norm = N*N / float((N*N - n_edges) * 2)
         # self.pos_indices_list = self.adj._indices().t().data.numpy()
