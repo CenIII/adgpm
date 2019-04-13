@@ -27,6 +27,8 @@ def mask_l2_loss(a, b, mask):
 
 def updateADJCoo(A_pred_0,A_pred_1,adj_coo,inds2hops,n):
 
+    A_pred_0 = A_pred_0.cpu().detach().numpy() 
+    A_pred_1 = A_pred_1.cpu().detach().numpy() 
     diff = A_pred_1 - A_pred_0
     booldiff = np.zeros_like(diff)
     booldiff[diff>0.095]=1
