@@ -157,6 +157,11 @@ class ImageNetFeatsTrain(Dataset):
         npy = torch.tensor(npy)
         labels = torch.LongTensor(labels)
         lengths = torch.LongTensor(lengths).squeeze()
+        inds = torch.argsort(-lengths)
+        npy = npy[inds]
+        labels = labels[inds]
+        lengths = lengths[inds]
+
         return npy, labels, lengths
 
 

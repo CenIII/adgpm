@@ -8,7 +8,7 @@ import time
 # class version of similarity loss
 class SimilarityLoss(nn.Module):
 
-    def __init__(self, gamma1, gamma2, gamma3, bsize=25):
+    def __init__(self, gamma1, gamma2, gamma3, bsize=30):
         super(SimilarityLoss, self).__init__()
         self.gamma1 = gamma1
         self.gamma2 = gamma2
@@ -16,56 +16,56 @@ class SimilarityLoss(nn.Module):
         self.bsize = bsize
 
 
-    def similarity_loss(self, image, text, length_info):  # consider passing the perceptron layer
-        """
-        text_images pair: a batch of text_image pairs
-        size_info: size of each dimension of image and text
-        """
-        loss1_w = 0
-        loss2_w = 0
-        loss_reg = 0
+    # def similarity_loss(self, image, text, length_info):  # consider passing the perceptron layer
+    #     """
+    #     text_images pair: a batch of text_image pairs
+    #     size_info: size of each dimension of image and text
+    #     """
+    #     loss1_w = 0
+    #     loss2_w = 0
+    #     loss_reg = 0
 
-        batch = image.size()[0]
-        for i in range(batch):
-            # print(i)
-            e = text[i][:length_info[i]]  # remove zero padding
-            v = image[i]
-            M, D, H_r, H_w = v.size()
-            v = v.permute(0, 3, 2, 1)
-            v = v.contiguous().view(M * H_r * H_w, D)
-            T, D = e.size()
-            numerator, beta = self.calculate_matching_score(v, e, M, H_r, H_w)
-            numerator = self.gamma3 * torch.exp(numerator)
-            # tmp = beta.t().mm(beta)#beta.mm(beta.t())
-            # loss_reg += torch.sqrt(torch.sum(tmp**2) - torch.sum(torch.diag(tmp)**2))
-            P_DQ_denum = 0
-            P_QD_denum = 0
-            spinds = np.zeros(5,dtype=np.int32)
-            spinds[0] = i
-            spinds[1:] = np.random.choice(batch,4)
-            # print('numerator'+str(numerator))
-            for j in spinds:
-                e_sub = text[j][:length_info[j]]
-                v_sub = image[j].permute(0, 3, 2, 1)
-                v_sub = v_sub.contiguous().view(M * H_r * H_w, D)
-                denum, _ = self.calculate_matching_score(v, e_sub, M, H_r, H_w)
-                denum2, _ = self.calculate_matching_score(v_sub, e, M, H_r, H_w)
-                # print(denum.data)
-                # print(denum2.data)
-                P_DQ_denum += self.gamma3 * torch.exp(denum)
-                P_QD_denum += self.gamma3 * torch.exp(denum2)
-                # print('P_DQ_denum'+str(P_DQ_denum))
-                # print('P_QD_denum'+str(P_QD_denum))
+    #     batch = image.size()[0]
+    #     for i in range(batch):
+    #         # print(i)
+    #         e = text[i][:length_info[i]]  # remove zero padding
+    #         v = image[i]
+    #         M, D, H_r, H_w = v.size()
+    #         v = v.permute(0, 3, 2, 1)
+    #         v = v.contiguous().view(M * H_r * H_w, D)
+    #         T, D = e.size()
+    #         numerator, beta = self.calculate_matching_score(v, e, M, H_r, H_w)
+    #         numerator = self.gamma3 * torch.exp(numerator)
+    #         # tmp = beta.t().mm(beta)#beta.mm(beta.t())
+    #         # loss_reg += torch.sqrt(torch.sum(tmp**2) - torch.sum(torch.diag(tmp)**2))
+    #         P_DQ_denum = 0
+    #         P_QD_denum = 0
+    #         spinds = np.zeros(5,dtype=np.int32)
+    #         spinds[0] = i
+    #         spinds[1:] = np.random.choice(batch,4)
+    #         # print('numerator'+str(numerator))
+    #         for j in spinds:
+    #             e_sub = text[j][:length_info[j]]
+    #             v_sub = image[j].permute(0, 3, 2, 1)
+    #             v_sub = v_sub.contiguous().view(M * H_r * H_w, D)
+    #             denum, _ = self.calculate_matching_score(v, e_sub, M, H_r, H_w)
+    #             denum2, _ = self.calculate_matching_score(v_sub, e, M, H_r, H_w)
+    #             # print(denum.data)
+    #             # print(denum2.data)
+    #             P_DQ_denum += self.gamma3 * torch.exp(denum)
+    #             P_QD_denum += self.gamma3 * torch.exp(denum2)
+    #             # print('P_DQ_denum'+str(P_DQ_denum))
+    #             # print('P_QD_denum'+str(P_QD_denum))
             
-            loss1_w -= torch.log(numerator / P_DQ_denum)
-            loss2_w -= torch.log(numerator / P_QD_denum)
-            # print('loss1:'+str(loss1_w))
-            # print('loss2:'+str(loss2_w))
-        loss1_w = loss1_w/batch
-        loss2_w = loss2_w/batch 
-        # loss_reg = loss_reg/(batch*T*M)
-        # print('loss_reg: '+str(loss_reg))
-        return loss1_w + loss2_w #+ loss_reg
+    #         loss1_w -= torch.log(numerator / P_DQ_denum)
+    #         loss2_w -= torch.log(numerator / P_QD_denum)
+    #         # print('loss1:'+str(loss1_w))
+    #         # print('loss2:'+str(loss2_w))
+    #     loss1_w = loss1_w/batch
+    #     loss2_w = loss2_w/batch 
+    #     # loss_reg = loss_reg/(batch*T*M)
+    #     # print('loss_reg: '+str(loss_reg))
+    #     return loss1_w + loss2_w #+ loss_reg
 
     def calculate_matching_score(self, v, e, lenAry, M, H_r, H_w,check_score_mat=False):
 
@@ -88,31 +88,33 @@ class SimilarityLoss(nn.Module):
         # step 2: get s: (B x M x H_r x W_r) x Tb
         s = v.mm(e.t())
         # step 3: for loop calculating softmax in dimension Tb, output: (B x M x H_r x W_r) x Tb
-        norm_temp = []
-        prev = 0
-        for idx in lenAry:
-            norm_temp.append(F.softmax(s[:, prev: idx], dim=1))
-            prev = idx
-        s_nt = self.gamma1 * torch.cat(norm_temp, dim=1)  # (B x M x H_r x W_r) x Tb
-        # step 4: softmax in dimension Vb reshape into 3 dimension and call softmax B x (M x H_r x W_r) x Tb, define (M x H_r x W_r) = Mhw
+        # norm_temp = []
+        # prev = 0
+        # for idx in lenAry:
+        #     norm_temp.append(F.softmax(s[:, prev: idx], dim=1))
+        #     prev = idx
+        # s_nt = self.gamma1 * torch.cat(norm_temp, dim=1)  # (B x M x H_r x W_r) x Tb
+        # # step 4: softmax in dimension Vb reshape into 3 dimension and call softmax B x (M x H_r x W_r) x Tb, define (M x H_r x W_r) = Mhw
 
-        alpha = F.softmax(s_nt.view(B, -1, Tb), dim=1) # B x Mhw x Tb
-        # step 5: v (B x Mhw x D), \alpha (B x Mhw x Tb) --> v\tilde (B x Tb x D)
-        v = v.view(B, -1, D)
-        v_tidal = alpha.permute(0, 2, 1).bmm(v) # (B x Tb x D)
+        # alpha = F.softmax(s_nt.view(B, -1, Tb), dim=1) # B x Mhw x Tb
+        # # step 5: v (B x Mhw x D), \alpha (B x Mhw x Tb) --> v\tilde (B x Tb x D)
+        # v = v.view(B, -1, D)
+        # v_tidal = alpha.permute(0, 2, 1).bmm(v) # (B x Tb x D)
         # step 6: v\tilde (B x Tb x D), e (Tb x D) --> B x Tb
-        v_tidal_norm = F.normalize(v_tidal, dim=2)
-        e_norm = F.normalize(e, dim=1)
-        logit_mat = torch.sum(v_tidal_norm * e_norm, dim=2) # B x Tb
-        exp_mat = torch.exp(logit_mat)
+        # v_tidal_norm = F.normalize(v_tidal, dim=2)
+        # e_norm = F.normalize(e, dim=1)
+        # logit_mat = torch.sum(v_tidal_norm * e_norm, dim=2) # B x Tb
+        # exp_mat = torch.exp(logit_mat)
         # step 7: for loop  B x Tb --> B x B
-        score_temp = []
-        prev = 0
-        for idx in lenAry:
-            score_temp.append((torch.sum(exp_mat[:, prev: idx], dim=1)/(idx-prev)).unsqueeze(1))
-            prev = idx
-        score_mat = torch.cat(score_temp, dim=1)
-        log_score_mat_1 = torch.log(torch.pow(score_mat, 1 / self.gamma2)+1e-10) # B x B 
+        # score_temp = []
+        # prev = 0
+        # for idx in lenAry:
+        #     score_temp.append((torch.sum(exp_mat[:, prev: idx], dim=1)/(idx-prev)).unsqueeze(1))
+        #     prev = idx
+        # score_mat = torch.cat(score_temp, dim=1)
+        # log_score_mat_1 = torch.log(torch.pow(score_mat, 1 / self.gamma2)+1e-10) # B x B 
+        
+
         # print(log_score_mat_1.size())
         # checkNan(log_score_mat_1)
 
@@ -164,9 +166,9 @@ class SimilarityLoss(nn.Module):
         loss_reg = loss_reg/B
         # checkNan(loss_reg)
         # print('loss_reg: '+str(loss_reg.data))
-        log_score_mat_1 = self.gamma3 * log_score_mat_1
+        # log_score_mat_1 = self.gamma3 * log_score_mat_1
         log_score_mat_2 = self.gamma3 * log_score_mat_2
-        log_score_mat = log_score_mat_1 + log_score_mat_2
+        log_score_mat = log_score_mat_2 #log_score_mat_1 + 
         exp_score_mat = torch.exp(log_score_mat)
         if check_score_mat:
             return exp_score_mat
@@ -177,7 +179,7 @@ class SimilarityLoss(nn.Module):
         loss1 = (pdq + pqd)/B
         # checkNan(loss1)
 
-        return loss1+loss_reg
+        return loss1#+loss_reg
 
         # B, T, _ = e.size()
         
@@ -285,23 +287,30 @@ class SimilarityLoss(nn.Module):
         :param text: 2D tensor for text with dimension B x 15 x D
         :param length_info with size B every value is the end index of every short sentence.
         """
-        B, M, D, H_r, H_w = image.size()
+        # B, M, D, H_r, H_w = image.size()
         
-        loss = 0
-        # rand inds
-        inds = list(range(B))
-        random.shuffle(inds)
-        image = image[inds].permute(0,1,3,4,2).contiguous().view(B,-1,D) #B x M x H_r x W_r x D
-        text = text[inds]
-        length_info = length_info[inds]
+        # loss = 0
+        # # rand inds
+        # inds = list(range(B))
+        # random.shuffle(inds)
+        # image = image[inds].permute(0,1,3,4,2).contiguous().view(B,-1,D) #B x M x H_r x W_r x D
+        # text = text[inds]
+        # length_info = length_info[inds]
 
-        numBlcks = int(B/self.bsize)+1
-        for i in range(0,B,self.bsize):
-            image_b = image[i:i+self.bsize]
-            text_b = torch.cat([text[j][:length_info[j]] for j in range(i,min(i+self.bsize,B))],dim=0).contiguous()
-            len_b = [torch.sum(length_info[i:j+1]) for j in range(i,min(i+self.bsize,B))]
-            loss += self.calculate_matching_score(image_b, text_b, len_b, M, H_r, H_w)
-        loss = loss/numBlcks
+        # numBlcks = int(B/self.bsize)+1
+        # for i in range(0,B,self.bsize):
+        #     image_b = image[i:i+self.bsize]
+        #     text_b = torch.cat([text[j][:length_info[j]] for j in range(i,min(i+self.bsize,B))],dim=0).contiguous()
+        #     len_b = [torch.sum(length_info[i:j+1]) for j in range(i,min(i+self.bsize,B))]
+        #     loss += self.calculate_matching_score(image_b, text_b, len_b, M, H_r, H_w)
+        # loss = loss/numBlcks
+        B, M, D, H_r, H_w = image.size()
+        image = image.permute(0,1,3,4,2).contiguous().view(B,-1,D) #B x M x H_r x W_r x D
+        
+        image_b = image
+        text_b = torch.cat([text[j][:length_info[j]] for j in range(B)],dim=0).contiguous()
+        len_b = [torch.sum(length_info[0:j+1]) for j in range(B)]
+        loss = self.calculate_matching_score(image_b, text_b, len_b, M, H_r, H_w)
         return loss
 
 
