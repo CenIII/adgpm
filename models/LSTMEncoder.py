@@ -51,7 +51,7 @@ class EncoderRNN(BaseRNN):
         self.linear = nn.Linear(vocab_size, embedding_size, bias=False)
         self.embedding = nn.Embedding(vocab_size, embedding_size)
         if embedding_parameter is not None:
-            embedding_parameter = torch.FloatTensor(embedding_parameter)
+            embedding_parameter = torch.DoubleTensor(embedding_parameter)
             self.linear.weight = nn.Parameter(embedding_parameter)
             self.embedding.weight = nn.Parameter(embedding_parameter)
         self.embedding.weight.requires_grad = update_embedding
@@ -74,7 +74,7 @@ class EncoderRNN(BaseRNN):
             - **output** (batch, seq_len, hidden_size): variable containing the encoded features of the input sequence
         """
         total_length = input_var.size(1)
-        input_lengths = input_lengths.cpu()
+        # input_lengths = input_lengths.cpu()
         if use_prob_vector:
             embedded = self.linear(input_var)
         else:
