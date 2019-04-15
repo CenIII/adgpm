@@ -46,6 +46,7 @@ def parseArgs():
 
 if __name__ == '__main__':
 	args = parseArgs()
+	os.makedirs(args.save_path,exist_ok=True)
 	# graph = json.load(open('materials/imagenet-induced-graph.json', 'r'))
 	# wnids = graph['wnids']
 	# n = len(wnids)
