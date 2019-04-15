@@ -15,6 +15,14 @@ import pickle
 import tqdm
 from torch.utils.data import DataLoader
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+
+def makeInp(*inps):
+	ret = []
+	for inp in inps:
+		ret.append(inp.to(device))
+	return ret
 
 if __name__ == '__main__':
 
@@ -38,9 +46,9 @@ if __name__ == '__main__':
 	lstmEnc = EncoderRNN(len(wordembs), 82, 2049, 300,
 	                 input_dropout_p=0, dropout_p=0,
 	                 n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
-	                 embedding_parameter=wordembs, update_embedding=False)
+	                 embedding_parameter=wordembs, update_embedding=False).to(device)
 	# todo: crit
-	crit = SimilarityLoss(0.5,0.5,1)
+	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
 	dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
 	loader = DataLoader(dataset=dataset, batch_size=1,
@@ -52,7 +60,7 @@ if __name__ == '__main__':
 									ascii=True)
 		ep_loss = 0
 		for batch_id, batch in qdar:
-			feats, texts, lengths = batch   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
+			feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
 			
 			out2 = lstmEnc(texts,input_lengths=lengths)
 			loss = crit(feats,out2,lengths)
