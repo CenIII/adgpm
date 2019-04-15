@@ -146,18 +146,17 @@ class ImageNetFeatsTrain(Dataset):
         # sample 30 classes by self.A_pred
         npy = np.zeros([30,5,2049,1,1])
         labels = np.zeros([30,self.maxLen])
-        lengths = []#np.zeros(30)
+        lengths = np.zeros(30)
         classids = self.sampleClasses(idx)
         for i in range(30):
             ind = classids[i]
             npy[i] = self.sampleFeatsforOneWnid(ind)
             labels[i] = self.desc_encoded[ind]
-            lengths.append(self.desc_lengths[ind])
+            lengths[i] = self.desc_lengths[ind]
 
         npy = torch.tensor(npy)
         labels = torch.LongTensor(labels)
-        # lengths = torch.LongTensor(lengths)
-        lengths = torch.cat(lengths)
+        lengths = torch.Tensor(lengths,dtype=torch.int32)
         return npy, labels, lengths
 
 
