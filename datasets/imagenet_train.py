@@ -138,15 +138,6 @@ class ImageNetFeatsTrain(Dataset):
         self.wnid_cnt[ind] = cnt
         return npy
 
-    def getLengths(self,caps):
-        batchSize = len(caps)
-        lengths = torch.zeros(batchSize,dtype=torch.int64)
-        for i in range(batchSize):
-            cap = caps[i]
-            nonz = (cap==0).nonzero()
-            lengths[i] = nonz[0][0] if len(nonz)>0 else len(cap)
-        return lengths
-
     def __len__(self):
         return len(self.wnid_list)
 
@@ -155,21 +146,17 @@ class ImageNetFeatsTrain(Dataset):
         # sample 30 classes by self.A_pred
         npy = np.zeros([30,5,2049,1,1])
         labels = np.zeros([30,self.maxLen])
-        # lengths = np.zeros(30)
+        lengths = np.zeros(30)
         classids = self.sampleClasses(idx)
         for i in range(30):
             ind = classids[i]
             npy[i] = self.sampleFeatsforOneWnid(ind)
-            labels[i] = self.desc_encoded[ind]     
+            labels[i] = self.desc_encoded[ind]
+            lengths[i] = self.desc_lengths[ind]
 
         npy = torch.tensor(npy)
         labels = torch.LongTensor(labels)
-        lengths = self.getLengths(labels) #self.desc_lengths[ind]
-        # lengths = torch.as_tensor(lengths,dtype=torch.int32)
-        inds = torch.argsort(-lengths)
-        npy = npy[inds]
-        labels = labels[inds]
-        lengths = lengths[inds]
+        lengths = torch.LongTensor(lengths).squeeze()
         return npy, labels, lengths
 
 
