@@ -64,9 +64,12 @@ class ImageNetFeatsTrain(Dataset):
 
         # with open('./save/npyfile_list.pkl','rb') as f:
         #     self.npyfile_list = pickle.load(f)
-        self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
-        self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
+        
+        # self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
+        with open('./materials/npyfile_list.pkl','rb') as f:
+            self.wnid_feats_list = pickle.load(f)
 
+        presList = self.removeEmptyInds(self.wnid_feats_list)
         # for j in range(len(self.wnid_list)):
         #     wnid = self.wnid_list[j]
         #     wnid_path = os.path.join(self.path,wnid)
@@ -78,11 +81,13 @@ class ImageNetFeatsTrain(Dataset):
         #         npy_list[i] = os.path.join(wnid_path,npy_list[i])
         #     self.wnid_feats_list[j] = npy_list  # path, wnid
 
-        with open('./materials/npyfile_list.pkl','rb') as f:
-            self.wnid_feats_list = pickle.load(f)
+        self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
+
+
         # print('dump done.')
         # load A_pred_0
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
+        A_pred = A_pred[presList,presList]
         np.fill_diagonal(A_pred, 0.)
         self.probMat = softmax(A_pred,theta=1.0,axis=1)
         with open('./materials/desc_enc.pkl','rb') as f:
@@ -101,7 +106,18 @@ class ImageNetFeatsTrain(Dataset):
             self.desc_encoded[i] = encoded_desc[desc_wnid2ind[wnid]]
             self.desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
 
-
+    def removeEmptyInds(self,wnid_feats_list):
+        emptyWnidList = []
+        preserveList = []
+        for k,v in wnid_feats_list.items():
+            if len(v)==0:
+                emptyWnidList.append(self.wnid_list[k])
+            else:
+                preserveList.append[k]
+        for wnid in emptyWnidList:
+            print('remove empty: '+str(wnid))
+            self.wnid_list.remove(wnid)
+        return preserveList
     # def resetNShuffle(self):
     #     self.wnid_cnt = {self.wnid_list[i]:0 for i in range(len(self.wnid_list))}
     #     for k,v in self.wnid_feats_list.item():
