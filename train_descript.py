@@ -7,7 +7,7 @@ from models.LSTMEncoder import EncoderRNN
 # import similarity loss
 
 from models.SimilarityLoss import SimilarityLoss
-
+import numpy as np
 
 import json
 import torch
