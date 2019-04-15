@@ -74,6 +74,7 @@ class EncoderRNN(BaseRNN):
             - **output** (batch, seq_len, hidden_size): variable containing the encoded features of the input sequence
         """
         total_length = input_var.size(1)
+        input_lengths = input_lengths.cpu()
         if use_prob_vector:
             embedded = self.linear(input_var)
         else:
