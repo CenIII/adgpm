@@ -156,7 +156,7 @@ class ImageNetFeatsTrain(Dataset):
 
         npy = torch.tensor(npy)
         labels = torch.LongTensor(labels)
-        lengths = torch.Tensor(lengths,dtype=torch.int32)
+        lengths = torch.from_numpy(lengths,dtype=torch.int32)
         return npy, labels, lengths
 
 
