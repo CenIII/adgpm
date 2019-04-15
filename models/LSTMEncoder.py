@@ -99,7 +99,7 @@ class EncoderRNN(BaseRNN):
         
         # output 
         batch, seq_len, _ = output.size()
-        output = self.linNet(output.view(-1,self.hidden_size)).view(batch,seq_len,-1)
+        output = self.linNet(output.contiguous().view(-1,self.hidden_size)).view(batch,seq_len,-1)
 
         return output
 
