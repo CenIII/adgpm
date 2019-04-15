@@ -144,8 +144,7 @@ class ImageNetFeatsTrain(Dataset):
         for i in range(batchSize):
             cap = caps[i]
             nonz = (cap==0).nonzero()
-            print(nonz)
-            lengths[i] = torch.IntTensor(nonz[0][0] if len(nonz)>0 else len(cap))
+            lengths[i] = nonz[0][0] if len(nonz)>0 else len(cap)
         return lengths
 
     def __len__(self):
@@ -161,11 +160,11 @@ class ImageNetFeatsTrain(Dataset):
         for i in range(30):
             ind = classids[i]
             npy[i] = self.sampleFeatsforOneWnid(ind)
-            labels[i] = self.desc_encoded[ind]
-        lengths = self.getLengths(labels) #self.desc_lengths[ind]
+            labels[i] = self.desc_encoded[ind]     
 
         npy = torch.tensor(npy)
         labels = torch.LongTensor(labels)
+        lengths = self.getLengths(labels) #self.desc_lengths[ind]
         # lengths = torch.as_tensor(lengths,dtype=torch.int32)
         return npy, labels, lengths
 
