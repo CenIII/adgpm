@@ -62,6 +62,7 @@ if __name__ == '__main__':
 		for batch_id, batch in qdar:
 			feats, texts, lengths = batch   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
 			feats, texts = makeInp(feats,texts)
+			lengths = lengths.cpu().numpy()
 			out2 = lstmEnc(texts,input_lengths=lengths)
 			loss = crit(feats,out2,lengths)
 
