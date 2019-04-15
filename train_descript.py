@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
 	for epoch in range(1, 10):
 		qdar = tqdm.tqdm(enumerate(loader, 1),
-									total=6000,
+									total=len(loader),
 									ascii=True)
 		ep_loss = 0
 		for batch_id, batch in qdar:
