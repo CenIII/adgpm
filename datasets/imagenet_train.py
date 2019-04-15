@@ -67,20 +67,20 @@ class ImageNetFeatsTrain(Dataset):
         self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
         self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
 
-        for j in range(len(self.wnid_list)):
-            wnid = self.wnid_list[j]
-            wnid_path = os.path.join(self.path,wnid)
-            npy_list = os.listdir(wnid_path)
-            if 'feats.npy' in npy_list:
-                npy_list.remove('feats.npy')
+        # for j in range(len(self.wnid_list)):
+        #     wnid = self.wnid_list[j]
+        #     wnid_path = os.path.join(self.path,wnid)
+        #     npy_list = os.listdir(wnid_path)
+        #     if 'feats.npy' in npy_list:
+        #         npy_list.remove('feats.npy')
 
-            for i in range(len(npy_list)):
-                npy_list[i] = os.path.join(wnid_path,npy_list[i])
-            self.wnid_feats_list[j] = npy_list  # path, wnid
+        #     for i in range(len(npy_list)):
+        #         npy_list[i] = os.path.join(wnid_path,npy_list[i])
+        #     self.wnid_feats_list[j] = npy_list  # path, wnid
 
-        with open('./materials/npyfile_list.pkl','wb') as f:
-            pickle.dump(self.wnid_feats_list,f)
-        print('dump done.')
+        with open('./materials/npyfile_list.pkl','rb') as f:
+            self.wnid_feats_list = pickle.load(f)
+        # print('dump done.')
         # load A_pred_0
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
         np.fill_diagonal(A_pred, 0.)
