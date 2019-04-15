@@ -145,8 +145,8 @@ class ImageNetFeatsTrain(Dataset):
         # for idx class (1~1000), find by A_pred_0 probability 30 classes, draw 5 feats from each class, reshape it to (30,5,2048,1,1)
         # sample 30 classes by self.A_pred
         npy = np.zeros([30,5,2049,1,1])
-        labels = np.zeros([30,self.maxLen],dtype=np.int32)
-        lengths = np.zeros(30,dtype=np.int32)
+        labels = np.zeros([30,self.maxLen])
+        lengths = np.zeros(30)
         classids = self.sampleClasses(idx)
         for i in range(30):
             ind = classids[i]
@@ -154,6 +154,9 @@ class ImageNetFeatsTrain(Dataset):
             labels[i] = self.desc_encoded[ind]
             lengths[i] = self.desc_lengths[ind]
 
+        npy = torch.tensor(npy)
+        labels = torch.LongTensor(labels)
+        lengths = torch.LongTensor(lengths)
         return npy, labels, lengths
 
 
