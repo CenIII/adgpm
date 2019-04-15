@@ -14,6 +14,7 @@ import torch
 import pickle
 import tqdm
 from torch.utils.data import DataLoader
+import os
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -23,9 +24,28 @@ def makeInp(*inps):
 	for inp in inps:
 		ret.append(inp[0].to(device))
 	return ret
+def saveStateDict(lstmEnc,savepath):
+		# models = {}
+		# models['linNet'] = linNet.state_dict()
+		# models['lstmEnc'] = lstmEnc.state_dict()
+		torch.save(lstmEnc.state_dict(),os.path.join(savepath ,'lstmEnc.pt'))
+
+def parseArgs():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-e','--evaluate_mode',
+		action='store_true',
+	  	help='check similarity matrix.')
+	parser.add_argument('-p','--model_path',
+		default='./lstmEnc.pt')
+	parser.add_argument('-s','--save_path',
+		default='./save/default/')
+	parser.add_argument('-b','--batch_imgs',
+		default=4, type=int)
+	args = parser.parse_args()
+	return args
 
 if __name__ == '__main__':
-
+	args = parseArgs()
 	# graph = json.load(open('materials/imagenet-induced-graph.json', 'r'))
 	# wnids = graph['wnids']
 	# n = len(wnids)
@@ -57,7 +77,7 @@ if __name__ == '__main__':
 
 	for epoch in range(1, 10):
 		qdar = tqdm.tqdm(enumerate(loader, 1),
-									total=6666,
+									total=6000,
 									ascii=True)
 		ep_loss = 0
 		for batch_id, batch in qdar:
@@ -77,3 +97,8 @@ if __name__ == '__main__':
 		
 		ep_loss = ep_loss/len(loader)
 		print('Epoch average loss: '+str(ep_loss))
+
+		saveStateDict(lstmEnc,args.save_path)
+
+
+
