@@ -140,7 +140,7 @@ class ImageNetFeatsTrain(Dataset):
 
     def getLengths(self,caps):
         batchSize = len(caps)
-        lengths = torch.zeros(batchSize,dtype=torch.int32)
+        lengths = torch.zeros(batchSize,dtype=torch.int64)
         for i in range(batchSize):
             cap = caps[i]
             nonz = (cap==0).nonzero()
