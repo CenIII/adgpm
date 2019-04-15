@@ -75,7 +75,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list.remove('feats.npy')
 
             for i in range(len(npy_list)):
-                npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
+                npy_list[i] = os.path.join(wnid_path,npy_list[i])
             self.wnid_feats_list[j] = npy_list  # path, wnid
 
         with open('./materials/npyfile_list.pkl','wb') as f:
