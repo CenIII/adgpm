@@ -87,7 +87,7 @@ class ImageNetFeatsTrain(Dataset):
         # print('dump done.')
         # load A_pred_0
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
-        A_pred = A_pred[presList,presList]
+        A_pred = A_pred[presList,:][:,presList]
         np.fill_diagonal(A_pred, 0.)
         self.probMat = softmax(A_pred,theta=1.0,axis=1)
         with open('./materials/desc_enc.pkl','rb') as f:
