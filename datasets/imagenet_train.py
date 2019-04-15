@@ -117,6 +117,10 @@ class ImageNetFeatsTrain(Dataset):
         for wnid in emptyWnidList:
             print('remove empty: '+str(wnid))
             self.wnid_list.remove(wnid)
+        newFeatDict = {}
+        for i in range(len(preserveList)):
+            newFeatDict[i] = wnid_feats_list[preserveList[i]]
+        self.wnid_feats_list = newFeatDict
         return preserveList
     # def resetNShuffle(self):
     #     self.wnid_cnt = {self.wnid_list[i]:0 for i in range(len(self.wnid_list))}
