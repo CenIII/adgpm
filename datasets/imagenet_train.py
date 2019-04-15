@@ -113,7 +113,7 @@ class ImageNetFeatsTrain(Dataset):
             if len(v)==0:
                 emptyWnidList.append(self.wnid_list[k])
             else:
-                preserveList.append[k]
+                preserveList.append(k)
         for wnid in emptyWnidList:
             print('remove empty: '+str(wnid))
             self.wnid_list.remove(wnid)
