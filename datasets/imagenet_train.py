@@ -122,7 +122,7 @@ class ImageNetFeatsTrain(Dataset):
 
     def sampleClasses(self,ind):
         probvec = self.probMat[ind]
-        sampled = np.random.choices(len(self.wnid_list),30,p=probvec,replace=False)
+        sampled = np.random.choice(len(self.wnid_list),30,p=probvec,replace=False)
         return sampled
 
     def sampleFeatsforOneWnid(self,ind):
