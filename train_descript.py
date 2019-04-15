@@ -28,7 +28,7 @@ if __name__ == '__main__':
 	
 
 	# todo: load vocab data
-	with open('./materials/desc_vocab.pkl','rb') as f:
+	with open('./materials/desc_vocabs.pkl','rb') as f:
 		vocab = pickle.load(f)
 	wordembs = vocab['word_embs']
 
