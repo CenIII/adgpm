@@ -47,6 +47,7 @@ class EncoderRNN(BaseRNN):
         super(EncoderRNN, self).__init__(vocab_size, max_len, hidden_size,
                 input_dropout_p, dropout_p, n_layers, rnn_cell)
 
+        self.hidden_size = hidden_size
         self.variable_lengths = variable_lengths
         self.linear = nn.Linear(vocab_size, embedding_size, bias=False)
         self.embedding = nn.Embedding(vocab_size, embedding_size)
@@ -58,6 +59,13 @@ class EncoderRNN(BaseRNN):
         self.linear.weight.requires_grad = update_embedding
         self.rnn = self.rnn_cell(embedding_size, hidden_size, n_layers,
                                  batch_first=True, bidirectional=bidirectional, dropout=dropout_p)
+        self.linNet = nn.Sequential(
+                        nn.Linear(hidden_size,2049),
+                        nn.ReLU(),
+                        nn.Linear(2049,2049)
+                    )
+        
+
 
     def forward(self, input_var, use_prob_vector=False, input_lengths=None):
         """
@@ -88,5 +96,16 @@ class EncoderRNN(BaseRNN):
 
         if self.variable_lengths:
             output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=total_length)
+        
+        # output 
+        outSize = output.size()
+        output = self.linNet(output.view(-1,self.hidden_size)).view(outSize)
 
         return output
+
+
+
+
+
+
+

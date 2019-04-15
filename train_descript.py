@@ -66,11 +66,11 @@ if __name__ == '__main__':
 	wordembs = vocab['word_embs']
 
 	# init models
-	lstmEnc = EncoderRNN(len(wordembs), 82, 2049, 300,
+	lstmEnc = EncoderRNN(len(wordembs), 82, 1024, 300,
 	                 input_dropout_p=0, dropout_p=0,
 	                 n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
 	                 embedding_parameter=wordembs, update_embedding=False).to(device)
-	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0001)
+	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0002)
 	# todo: crit
 	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 	loader = DataLoader(dataset=dataset, batch_size=1,
 						shuffle=True, num_workers=1)
 
-	for epoch in range(1, 10):
+	for epoch in range(1, 30):
 		qdar = tqdm.tqdm(enumerate(loader, 1),
 									total=len(loader),
 									ascii=True)
