@@ -78,6 +78,9 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list[i] = (os.path.join(wnid_path,npy_list[i]),wnid)
             self.wnid_feats_list[j] = npy_list  # path, wnid
 
+        with open('./materials/npyfile_list.pkl','wb') as f:
+            pickle.dump(self.wnid_feats_list,f)
+        print('dump done.')
         # load A_pred_0
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
         np.fill_diagonal(A_pred, 0.)
