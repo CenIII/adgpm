@@ -146,6 +146,8 @@ class ImageNetFeatsTrain(Dataset):
         npylist = self.wnid_feats_list[ind]
         npy = np.zeros([5,2049,1,1])
         for i in range(5):
+            if cnt >= len(npylist):
+                print('cnt: '+str(cnt)+' len npylist: '+str(len(npylist))+' wnid: '+str(self.wnid_list[ind]))
             npy[i,:,0,0] = np.load(npylist[cnt])
             cnt = cnt+1
             if cnt >= len(npylist):
