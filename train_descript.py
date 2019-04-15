@@ -21,7 +21,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 def makeInp(*inps):
 	ret = []
 	for inp in inps:
-		ret.append(inp.to(device))
+		ret.append(inp[0].to(device))
 	return ret
 
 if __name__ == '__main__':
