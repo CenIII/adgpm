@@ -144,7 +144,7 @@ class ImageNetFeatsTrain(Dataset):
         for i in range(batchSize):
             cap = caps[i]
             nonz = (cap==0).nonzero()
-            lengths[i] = nonz[0][0] if len(nonz)>0 else len(cap)
+            lengths[i] = torch.IntTensor(nonz[0][0] if len(nonz)>0 else len(cap))
         return lengths
 
     def __len__(self):
