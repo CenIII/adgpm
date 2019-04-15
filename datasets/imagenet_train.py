@@ -128,7 +128,7 @@ class ImageNetFeatsTrain(Dataset):
     def sampleFeatsforOneWnid(self,ind):
         cnt = self.wnid_cnt[ind]
         npylist = self.wnid_feats_list[ind]
-        npy = np.zeros([5,2048,1,1])
+        npy = np.zeros([5,2049,1,1])
         for i in range(5):
             npy[i,:,0,0] = np.load(npylist[cnt])
             cnt = cnt+1
@@ -144,7 +144,7 @@ class ImageNetFeatsTrain(Dataset):
     def __getitem__(self, idx):
         # for idx class (1~1000), find by A_pred_0 probability 30 classes, draw 5 feats from each class, reshape it to (30,5,2048,1,1)
         # sample 30 classes by self.A_pred
-        npy = np.zeros([30,5,2048,1,1])
+        npy = np.zeros([30,5,2049,1,1])
         labels = np.zeros([30,self.maxLen])
         lengths = np.zeros(30)
         classids = self.sampleClasses(idx)

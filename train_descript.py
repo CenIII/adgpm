@@ -35,7 +35,7 @@ if __name__ == '__main__':
 	wordembs = vocab['word_embs']
 
 	# init models
-	lstmEnc = EncoderRNN(len(wordembs), 82, 2048, 300,
+	lstmEnc = EncoderRNN(len(wordembs), 82, 2049, 300,
 	                 input_dropout_p=0, dropout_p=0,
 	                 n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
 	                 embedding_parameter=wordembs, update_embedding=False)
