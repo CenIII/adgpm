@@ -97,6 +97,8 @@ if __name__ == '__main__':
 			loss_data = loss.data.cpu().numpy()
 			qdar.set_postfix(loss=str(np.round(loss_data,3)))
 			ep_loss += loss_data
+			if(batch_id>0 and batch_id%500==0):
+				saveStateDict(lstmEnc,args.save_path)
 		
 		ep_loss = ep_loss/len(loader)
 		print('Epoch average loss: '+str(ep_loss))
