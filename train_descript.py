@@ -60,8 +60,8 @@ if __name__ == '__main__':
 									ascii=True)
 		ep_loss = 0
 		for batch_id, batch in qdar:
-			feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
-			
+			feats, texts, lengths = batch   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
+			feats, texts = makeInp(feats, texts)
 			out2 = lstmEnc(texts,input_lengths=lengths)
 			loss = crit(feats,out2,lengths)
 
