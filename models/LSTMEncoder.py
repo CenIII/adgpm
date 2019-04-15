@@ -98,8 +98,8 @@ class EncoderRNN(BaseRNN):
             output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=total_length)
         
         # output 
-        outSize = output.size()
-        output = self.linNet(output.view(-1,self.hidden_size)).view(outSize)
+        batch, seq_len, _ = output.size()
+        output = self.linNet(output.view(-1,self.hidden_size)).view(batch,seq_len,-1)
 
         return output
 
