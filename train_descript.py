@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
 			optimizer.zero_grad()
 			loss.backward()
-			torch.nn.utils.clip_grad_norm_(linNet.parameters(),1.)
+			# torch.nn.utils.clip_grad_norm_(linNet.parameters(),1.)
 			optimizer.step()
 
 			loss_data = loss.data.cpu().numpy()
