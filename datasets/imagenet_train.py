@@ -66,21 +66,20 @@ class ImageNetFeatsTrain(Dataset):
         #     self.npyfile_list = pickle.load(f)
         
         # self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
-        with open('./materials/npyfile_list.pkl','rb') as f:
-            self.wnid_feats_list = pickle.load(f)
+        # with open('./materials/npyfile_list.pkl','rb') as f:
+        #     self.wnid_feats_list = pickle.load(f)
 
+        
+        for j in range(len(self.wnid_list)):
+            wnid = self.wnid_list[j]
+            wnid_path = os.path.join(self.path,wnid)
+            npy_list = os.listdir(wnid_path)
+            if 'feats.npy' in npy_list:
+                npy_list.remove('feats.npy')
+            for i in range(len(npy_list)):
+                npy_list[i] = os.path.join(wnid_path,npy_list[i])
+            self.wnid_feats_list[j] = npy_list  
         presList = self.removeEmptyInds(self.wnid_feats_list)
-        # for j in range(len(self.wnid_list)):
-        #     wnid = self.wnid_list[j]
-        #     wnid_path = os.path.join(self.path,wnid)
-        #     npy_list = os.listdir(wnid_path)
-        #     if 'feats.npy' in npy_list:
-        #         npy_list.remove('feats.npy')
-
-        #     for i in range(len(npy_list)):
-        #         npy_list[i] = os.path.join(wnid_path,npy_list[i])
-        #     self.wnid_feats_list[j] = npy_list  # path, wnid
-
         self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
 
 
