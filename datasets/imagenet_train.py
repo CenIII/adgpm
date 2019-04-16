@@ -82,7 +82,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list[i] = os.path.join(wnid_path,npy_list[i])
             self.wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
-        self.wnid_cnt = [0 for i in range(len(self.wnid_list))]
+        # self.wnid_cnt = [0 for i in range(len(self.wnid_list))]
         # self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
 
         # print('dump done.')
@@ -113,10 +113,28 @@ class ImageNetFeatsTrain(Dataset):
         for i in range(1000):
             shared_array[i] = 0
         self.wnid_cnt = shared_array
+        shared_array_base_2 = mp.Array(ctypes.c_int, 1000)
+        shared_array_2 = np.ctypeslib.as_array(shared_array_base_2.get_obj())
+        for i in range(1000):
+            shared_array_2[i] = 0
+        self.shuffleCnt = shared_array_2
 
+        shared_npy_inds = []
+        for i in range(1000):
+            shared_npy_inds.append(np.ctypeslib.as_array(mp.Array(ctypes.c_int, len(self.wnid_feats_list[i]))))
+            shared_npy_inds[-1] = self.shuffleNpyInds(shared_npy_inds[-1])
+        self.npy_inds = shared_npy_inds
 
-    # def getShuffleCnt(self):
-    #     return self.shuffleCnt
+    def shuffleNpyInds(self,indsArr):
+        length = len(indsArr)
+        zzz = list(range(length))
+        random.shuffle(zzz)
+        for i in range(length):
+            indsArr[i] = zzz[i]
+        return indsArr
+
+    def getShuffleCnt(self):
+        return self.shuffleCnt
 
     def getMaxWnidCnt(self):
         return max(self.wnid_cnt)
@@ -180,11 +198,12 @@ class ImageNetFeatsTrain(Dataset):
         for i in range(8):
             if cnt >= len(npylist):
                 print('cnt: '+str(cnt)+' len npylist: '+str(len(npylist))+' wnid: '+str(self.wnid_list[ind]))
-            npy[i,:,0,0] = np.load(npylist[cnt])
+            npy[i,:,0,0] = np.load(npylist[self.npy_inds[ind][cnt]])
             cnt = cnt+1
             if cnt >= len(npylist):
+                self.npy_inds[ind] = self.shuffleNpyInds(self.npy_inds[ind])
                 # random.shuffle(self.wnid_feats_list[ind])
-                # self.shuffleCnt[ind] += 1
+                self.shuffleCnt[ind] += 1
                 cnt = 0
         self.wnid_cnt[ind] = cnt
         return npy

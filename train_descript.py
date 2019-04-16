@@ -114,13 +114,8 @@ if __name__ == '__main__':
 	
 	if not args.evaluate_mode:
 		loader = DataLoader(dataset=dataset, batch_size=1,
-							shuffle=True, num_workers=2)
+							shuffle=True, num_workers=4)
 		for epoch in range(1, 100):
-			if epoch%6==0 and epoch>0:
-				# dataset.shuffleNpyList()
-				pass
-				loader = DataLoader(dataset=dataset, batch_size=1,
-							shuffle=True, num_workers=2)
 			ld = iter(loader)
 			qdar = tqdm.tqdm(range(len(loader)),total=len(loader),ascii=True)
 			ep_loss = 0
@@ -137,7 +132,7 @@ if __name__ == '__main__':
 				optimizer.step()
 
 				loss_data = loss.data.cpu().numpy()
-				qdar.set_postfix(loss=str(np.round(loss_data,3)),maxCnt=loader.dataset.getMaxWnidCnt())
+				qdar.set_postfix(loss=str(np.round(loss_data,3)),maxCnt=loader.dataset.getMaxWnidCnt(),shufCnt=np.sum(loader.dataset.getShuffleCnt()))
 				ep_loss += loss_data
 				if(batch_id>0 and batch_id%500==0):
 					saveStateDict(lstmEnc,args.save_path)
