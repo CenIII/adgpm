@@ -73,6 +73,7 @@ def reverseWord2Ind(word2ind):
 	return ind2word
 
 def decodeText(indarray,ind2word):
+	indarray = list(indarray.data.cpu().numpy())
 	tokens = []
 	for ind in indarray:
 		tokens.append(ind2word[ind])
@@ -145,7 +146,7 @@ if __name__ == '__main__':
 	else:
 		lstmEnc = reloadModel(args.model_path, lstmEnc)
 		feat,text,length = makeInp(*dataset.getOnePair(args.ind))
-		print(decodeText(text))
+		print(decodeText(text,ind2word))
 		out2 = lstmEnc(text,input_lengths=length)
 		loss = crit.output_att(feat,out2,length)
 
