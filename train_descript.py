@@ -95,7 +95,7 @@ if __name__ == '__main__':
 	with open('./materials/desc_vocabs.pkl','rb') as f:
 		vocab = pickle.load(f)
 	wordembs = vocab['word_embs']
-	word2ind = vocab['word_inds']
+	word2ind = vocab['word_dict']
 	ind2word = reverseWord2Ind(word2ind)
 
 	# init models
