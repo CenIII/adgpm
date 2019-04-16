@@ -114,7 +114,7 @@ class ImageNetFeatsTrain(Dataset):
 
     def getMaxWnidCnt(self):
         global wnid_cnt
-        return max(wnid_cnt)
+        return np.max(wnid_cnt)
 
     # def removeEmptyInds(self,wnid_feats_list):
     #     emptyWnidList = []
