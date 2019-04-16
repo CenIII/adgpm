@@ -150,7 +150,7 @@ class ImageNetFeatsTrain(Dataset):
         npy = torch.FloatTensor(npy)
         label = torch.LongTensor(label)
         length = torch.LongTensor(length)
-        return npy, label, length
+        return [npy], [label], [length]
 
     def sampleClasses(self,ind):
         probvec = self.probMat[ind]
