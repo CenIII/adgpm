@@ -107,7 +107,7 @@ if __name__ == '__main__':
 	                 input_dropout_p=0, dropout_p=0,
 	                 n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
 	                 embedding_parameter=wordembs, update_embedding=False).to(device)
-	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0005)
+	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0001)
 	# todo: crit
 	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
