@@ -11,6 +11,8 @@ from PIL import Image
 from torchvision import get_image_backend
 import numpy as np
 import pickle
+import ctypes
+import multiprocessing as mp
 
 def softmax(X, theta = 1.0, axis = None):
     """
@@ -81,7 +83,7 @@ class ImageNetFeatsTrain(Dataset):
             self.wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
         self.wnid_cnt = [0 for i in range(len(self.wnid_list))]
-        self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
+        # self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
 
         # print('dump done.')
         # load A_pred_0
@@ -105,8 +107,16 @@ class ImageNetFeatsTrain(Dataset):
             self.desc_encoded[i] = encoded_desc[desc_wnid2ind[wnid]]
             self.desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
 
-    def getShuffleCnt(self):
-        return self.shuffleCnt
+        shared_array_base = mp.Array(ctypes.c_int, 1000)
+        shared_array = np.ctypeslib.as_array(shared_array_base.get_obj())
+        # shared_array = shared_array.reshape(nb_samples, c, h, w)
+        for i in range(1000):
+            shared_array[i] = 0
+        self.wnid_cnt = shared_array
+
+
+    # def getShuffleCnt(self):
+    #     return self.shuffleCnt
 
     def getMaxWnidCnt(self):
         return max(self.wnid_cnt)
@@ -173,8 +183,8 @@ class ImageNetFeatsTrain(Dataset):
             npy[i,:,0,0] = np.load(npylist[cnt])
             cnt = cnt+1
             if cnt >= len(npylist):
-                random.shuffle(self.wnid_feats_list[ind])
-                self.shuffleCnt[ind] += 1
+                # random.shuffle(self.wnid_feats_list[ind])
+                # self.shuffleCnt[ind] += 1
                 cnt = 0
         self.wnid_cnt[ind] = cnt
         return npy
