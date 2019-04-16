@@ -48,7 +48,7 @@ def reloadModel(model_path,lstmEnc):
 
 	lstmEnc = subload(lstmEnc,pt)
 	
-	return linNet,lstmEnc
+	return lstmEnc
 
 def parseArgs():
 	parser = argparse.ArgumentParser()
