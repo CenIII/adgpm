@@ -110,19 +110,21 @@ if __name__ == '__main__':
 	# todo: crit
 	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
-	dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
+	loader = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
 	
 	if not args.evaluate_mode:
 
-		loader = DataLoader(dataset=dataset, batch_size=1,
-							shuffle=True, num_workers=2)
+		# loader = DataLoader(dataset=dataset, batch_size=1,
+		# 					shuffle=True, num_workers=2)
 
 		for epoch in range(1, 100):
-			ld = iter(loader)
+			indsList = list(range(len(loader)))
+			random.shuffle(indsList)
+			# ld = iter(loader)
 			qdar = tqdm.tqdm(range(len(loader)),total=len(loader),ascii=True)
 			ep_loss = 0
 			for batch_id in qdar:
-				batch = next(ld)
+				batch = loader.__getitem__(indsList[batch_id])
 				feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
 				
 				out2 = lstmEnc(texts,input_lengths=lengths)
@@ -134,8 +136,8 @@ if __name__ == '__main__':
 				optimizer.step()
 
 				loss_data = loss.data.cpu().numpy()
-				qdar.set_postfix(loss=str(np.round(loss_data,3)),shuffleCnt=np.sum(loader.dataset.getShuffleCnt()),
-									maxCnt=loader.dataset.getMaxWnidCnt(),ldshuffleCnt=np.sum(ld.dataset.getShuffleCnt()))
+				qdar.set_postfix(loss=str(np.round(loss_data,3)),shuffleCnt=np.sum(loader.getShuffleCnt()),
+									maxCnt=loader.getMaxWnidCnt())
 				ep_loss += loss_data
 				if(batch_id>0 and batch_id%500==0):
 					saveStateDict(lstmEnc,args.save_path)
