@@ -138,7 +138,7 @@ class ImageNetFeatsTrain(Dataset):
     #     feats = feats[:keeplen]
     #     feats = torch.tensor(feats)
     #     return feats #ImageNetFeatsSubset(path, wnid, keep_ratio=self.keep_ratio)
-    def getOnePair(ind):
+    def getOnePair(self,ind):
         npylist = self.wnid_feats_list[ind]
         npy = np.zeros([1,1,2049,1,1])
         cnt = int(np.random.uniform(0,len(npylist),1))

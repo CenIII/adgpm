@@ -145,7 +145,7 @@ if __name__ == '__main__':
 	else:
 		lstmEnc = reloadModel(args.model_path, lstmEnc)
 		feat,text,length = makeInp(*dataset.getOnePair(args.ind))
-		print(dataset.decodeText(text))
+		print(decodeText(text))
 		out2 = lstmEnc(text,input_lengths=length)
 		loss = crit.output_att(feat,out2,length)
 
