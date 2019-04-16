@@ -55,10 +55,12 @@ def softmax(X, theta = 1.0, axis = None):
 
     return p
 
+wnid_cnt = [0 for i in range(1000)]
+shuffleCnt = [0 for i in range(1000)]
+wnid_feats_list = {}
+
 class ImageNetFeatsTrain(Dataset):
-    wnid_cnt = [0 for i in range(1000)]
-    shuffleCnt = [0 for i in range(1000)]
-    wnid_feats_list = {}
+    
     def __init__(self, path, train_wnids): # imagenet_feats
         self.path = path
         self.wnid_list = train_wnids #os.listdir(self.path)
@@ -70,7 +72,7 @@ class ImageNetFeatsTrain(Dataset):
         # self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
         # with open('./materials/npyfile_list.pkl','rb') as f:
         #     self.wnid_feats_list = pickle.load(f)
-
+        global wnid_feats_list
         
         for j in range(len(self.wnid_list)):
             wnid = self.wnid_list[j]
@@ -80,7 +82,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list.remove('feats.npy')
             for i in range(len(npy_list)):
                 npy_list[i] = os.path.join(wnid_path,npy_list[i])
-            self.wnid_feats_list[j] = npy_list  
+            wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
         
 
@@ -107,27 +109,29 @@ class ImageNetFeatsTrain(Dataset):
             self.desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
 
     def getShuffleCnt(self):
-        return self.shuffleCnt
+        global shuffleCnt
+        return shuffleCnt
 
     def getMaxWnidCnt(self):
-        return max(self.wnid_cnt)
+        global wnid_cnt
+        return max(wnid_cnt)
 
-    def removeEmptyInds(self,wnid_feats_list):
-        emptyWnidList = []
-        preserveList = []
-        for k,v in wnid_feats_list.items():
-            if len(v)==0:
-                emptyWnidList.append(self.wnid_list[k])
-            else:
-                preserveList.append(k)
-        for wnid in emptyWnidList:
-            print('remove empty: '+str(wnid))
-            self.wnid_list.remove(wnid)
-        newFeatDict = {}
-        for i in range(len(preserveList)):
-            newFeatDict[i] = wnid_feats_list[preserveList[i]]
-        self.wnid_feats_list = newFeatDict
-        return preserveList
+    # def removeEmptyInds(self,wnid_feats_list):
+    #     emptyWnidList = []
+    #     preserveList = []
+    #     for k,v in wnid_feats_list.items():
+    #         if len(v)==0:
+    #             emptyWnidList.append(self.wnid_list[k])
+    #         else:
+    #             preserveList.append(k)
+    #     for wnid in emptyWnidList:
+    #         print('remove empty: '+str(wnid))
+    #         self.wnid_list.remove(wnid)
+    #     newFeatDict = {}
+    #     for i in range(len(preserveList)):
+    #         newFeatDict[i] = wnid_feats_list[preserveList[i]]
+    #     self.wnid_feats_list = newFeatDict
+    #     return preserveList
     # def resetNShuffle(self):
     #     self.wnid_cnt = {self.wnid_list[i]:0 for i in range(len(self.wnid_list))}
     #     for k,v in self.wnid_feats_list.item():
@@ -146,7 +150,10 @@ class ImageNetFeatsTrain(Dataset):
     #     feats = torch.tensor(feats)
     #     return feats #ImageNetFeatsSubset(path, wnid, keep_ratio=self.keep_ratio)
     def getOnePair(self,ind):
-        npylist = self.wnid_feats_list[ind]
+        global wnid_cnt
+        global wnid_feats_list
+        
+        npylist = wnid_feats_list[ind]
         npy = np.zeros([1,1,2049,1,1])
         cnt = int(np.random.uniform(0,len(npylist),1))
         npy[0,0,:,0,0] = np.load(npylist[cnt])
@@ -165,19 +172,23 @@ class ImageNetFeatsTrain(Dataset):
         return sampled
 
     def sampleFeatsforOneWnid(self,ind):
-        cnt = self.wnid_cnt[ind]
-        npylist = self.wnid_feats_list[ind]
+        global wnid_cnt
+        global wnid_feats_list
+        global shuffleCnt
+
+        cnt = wnid_cnt[ind]
+        npylist = wnid_feats_list[ind]
         npy = np.zeros([8,2049,1,1])
         for i in range(8):
             if cnt >= len(npylist):
-                print('cnt: '+str(cnt)+' len npylist: '+str(len(npylist))+' wnid: '+str(self.wnid_list[ind]))
+                print('cnt: '+str(cnt)+' len npylist: '+str(len(npylist))+' wnid: '+str(wnid_list[ind]))
             npy[i,:,0,0] = np.load(npylist[cnt])
             cnt = cnt+1
             if cnt >= len(npylist):
-                random.shuffle(self.wnid_feats_list[ind])
-                self.shuffleCnt[ind] += 1
+                random.shuffle(wnid_feats_list[ind])
+                shuffleCnt[ind] += 1
                 cnt = 0
-        self.wnid_cnt[ind] = cnt
+        wnid_cnt[ind] = cnt
         return npy
 
     def __len__(self):
