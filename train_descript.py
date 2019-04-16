@@ -73,7 +73,7 @@ def reverseWord2Ind(word2ind):
 	return ind2word
 
 def decodeText(indarray,ind2word):
-	indarray = list(indarray.data.cpu().numpy())
+	indarray = list(indarray.data.cpu().numpy()[0])
 	tokens = []
 	for ind in indarray:
 		tokens.append(ind2word[ind])
