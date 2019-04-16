@@ -138,6 +138,16 @@ class ImageNetFeatsTrain(Dataset):
     #     feats = feats[:keeplen]
     #     feats = torch.tensor(feats)
     #     return feats #ImageNetFeatsSubset(path, wnid, keep_ratio=self.keep_ratio)
+    def getOnePair(ind):
+        npylist = self.wnid_feats_list[ind]
+        npy = np.zeros([1,1,2049,1,1])
+        cnt = int(np.random.uniform(0,len(npylist),1))
+        npy[0,0,:,0,0] = np.load(npylist[cnt])
+        label = np.zeros([1,self.maxLen])
+        length = np.zeros(1)
+        label[0] = self.desc_encoded[ind]
+        length[0] = self.desc_lengths[ind]
+        return npy, label, length
 
     def sampleClasses(self,ind):
         probvec = self.probMat[ind]

@@ -31,6 +31,24 @@ def saveStateDict(lstmEnc,savepath):
 		# models['linNet'] = linNet.state_dict()
 		# models['lstmEnc'] = lstmEnc.state_dict()
 		torch.save(lstmEnc.state_dict(),os.path.join(savepath ,'lstmEnc.pt'))
+def reloadModel(model_path,lstmEnc):
+	pt = torch.load(model_path)
+
+	def subload(model,pt_dict):
+		model_dict = model.state_dict()
+		pretrained_dict = {}
+		for k, v in pt_dict.items():
+			if(k in model_dict):
+				pretrained_dict[k] = v
+		# 2. overwrite entries in the existing state dict
+		model_dict.update(pretrained_dict)
+		# 3. load the new state dict
+		model.load_state_dict(model_dict)
+		return model
+
+	lstmEnc = subload(lstmEnc,pt['lstmEnc'])
+	
+	return linNet,lstmEnc
 
 def parseArgs():
 	parser = argparse.ArgumentParser()
@@ -45,6 +63,19 @@ def parseArgs():
 		default=4, type=int)
 	args = parser.parse_args()
 	return args
+
+def reverseWord2Ind(word2ind):
+	ind2word = {}
+	for k,v in word2ind.items():
+		ind2word[v] = k
+	return ind2word
+
+def decodeText(indarray,ind2word):
+	tokens = []
+	for ind in indarray:
+		tokens.append(ind2word[ind])
+	return tokens
+
 
 if __name__ == '__main__':
 	args = parseArgs()
@@ -64,6 +95,8 @@ if __name__ == '__main__':
 	with open('./materials/desc_vocabs.pkl','rb') as f:
 		vocab = pickle.load(f)
 	wordembs = vocab['word_embs']
+	word2ind = vocab['word_inds']
+	ind2word = reverseWord2Ind(word2ind)
 
 	# init models
 	lstmEnc = EncoderRNN(len(wordembs), 82, 1024, 300,
@@ -75,35 +108,43 @@ if __name__ == '__main__':
 	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
 	dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
-	loader = DataLoader(dataset=dataset, batch_size=1,
-						shuffle=True, num_workers=2)
+	
+	if not args.evaluate_mode:
 
-	for epoch in range(1, 100):
-		ld = iter(loader)
-		qdar = tqdm.tqdm(range(len(loader)),total=len(loader),ascii=True)
-		ep_loss = 0
-		for batch_id in qdar:
-			batch = next(ld)
-			feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
+		loader = DataLoader(dataset=dataset, batch_size=1,
+							shuffle=True, num_workers=2)
+
+		for epoch in range(1, 100):
+			ld = iter(loader)
+			qdar = tqdm.tqdm(range(len(loader)),total=len(loader),ascii=True)
+			ep_loss = 0
+			for batch_id in qdar:
+				batch = next(ld)
+				feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
+				
+				out2 = lstmEnc(texts,input_lengths=lengths)
+				loss = crit(feats,out2,lengths)
+
+				optimizer.zero_grad()
+				loss.backward()
+				# torch.nn.utils.clip_grad_norm_(linNet.parameters(),1.)
+				optimizer.step()
+
+				loss_data = loss.data.cpu().numpy()
+				qdar.set_postfix(loss=str(np.round(loss_data,3)))
+				ep_loss += loss_data
+				if(batch_id>0 and batch_id%500==0):
+					saveStateDict(lstmEnc,args.save_path)
 			
-			out2 = lstmEnc(texts,input_lengths=lengths)
-			loss = crit(feats,out2,lengths)
+			ep_loss = ep_loss/len(loader)
+			print('Epoch average loss: '+str(ep_loss))
 
-			optimizer.zero_grad()
-			loss.backward()
-			# torch.nn.utils.clip_grad_norm_(linNet.parameters(),1.)
-			optimizer.step()
-
-			loss_data = loss.data.cpu().numpy()
-			qdar.set_postfix(loss=str(np.round(loss_data,3)))
-			ep_loss += loss_data
-			if(batch_id>0 and batch_id%500==0):
-				saveStateDict(lstmEnc,args.save_path)
-		
-		ep_loss = ep_loss/len(loader)
-		print('Epoch average loss: '+str(ep_loss))
-
-		saveStateDict(lstmEnc,args.save_path)
-
+			saveStateDict(lstmEnc,args.save_path)
+	else:
+		lstmEnc = reloadModel(args.model_path, lstmEnc)
+		feat,text,length = makeInp(*dataset.getOnePair())
+		print(dataset.decodeText(text))
+		out2 = lstmEnc(text,input_lengths=length)
+		loss = crit.output_att(feat,out2,length)
 
 

@@ -67,7 +67,7 @@ class SimilarityLoss(nn.Module):
     #     # print('loss_reg: '+str(loss_reg))
     #     return loss1_w + loss2_w #+ loss_reg
 
-    def calculate_matching_score(self, v, e, lenAry, M, H_r, H_w,check_score_mat=False):
+    def calculate_matching_score(self, v, e, lenAry, M, H_r, H_w,check_score_mat=False,output_att=False):
 
         """
         calculate matching score of (Q, D) pair, consider bi-direction
@@ -135,7 +135,8 @@ class SimilarityLoss(nn.Module):
         # step 3: compute beta B x M x Tb
         sd_rep = sd.unsqueeze(2).repeat(1,1,(H_r*H_w),1) # B x M x (H x W) x Tb
         beta = torch.sum(s_exp/sd_rep,dim=2) # B x M x Tb 
-
+        if output_att:
+            print(beta)
         # step 4: compute em_prime B x M x B x D
         beta = beta.view(-1, Tb)
         em_temp = []
@@ -269,16 +270,22 @@ class SimilarityLoss(nn.Module):
     def generate_similarity_matrix(self, image, text, length_info):
         B, M, D, H_r, H_w = image.size()
         
-        loss = 0
-        # rand inds
-        
-        
         image = image.permute(0,1,3,4,2).contiguous().view(B,-1,D) #B x M x H_r x W_r x D
         
         image_b = image
         text_b = torch.cat([text[j][:length_info[j]] for j in range(B)],dim=0).contiguous()
         len_b = [torch.sum(length_info[0:j+1]) for j in range(B)]
         score_mat = self.calculate_matching_score(image_b, text_b, len_b, M, H_r, H_w,check_score_mat=True)
+        return score_mat
+    def output_att(self, image, text, length_info):
+        B, M, D, H_r, H_w = image.size()
+        
+        image = image.permute(0,1,3,4,2).contiguous().view(B,-1,D) #B x M x H_r x W_r x D
+        
+        image_b = image
+        text_b = torch.cat([text[j][:length_info[j]] for j in range(B)],dim=0).contiguous()
+        len_b = [torch.sum(length_info[0:j+1]) for j in range(B)]
+        score_mat = self.calculate_matching_score(image_b, text_b, len_b, M, H_r, H_w,output_att=True)
         return score_mat
 
     def forward(self, image, text, length_info):
