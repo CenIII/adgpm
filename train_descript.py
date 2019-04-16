@@ -46,7 +46,7 @@ def reloadModel(model_path,lstmEnc):
 		model.load_state_dict(model_dict)
 		return model
 
-	lstmEnc = subload(lstmEnc,pt['lstmEnc'])
+	lstmEnc = subload(lstmEnc,pt)
 	
 	return linNet,lstmEnc
 
