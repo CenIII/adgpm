@@ -25,7 +25,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 def makeInp(*inps):
 	ret = []
 	for inp in inps:
-		ret.append(inp[0].to(device))
+		ret.append(inp.to(device))
 	return ret
 def saveStateDict(lstmEnc,savepath):
 		# models = {}
