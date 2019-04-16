@@ -56,9 +56,9 @@ def softmax(X, theta = 1.0, axis = None):
     return p
 
 class ImageNetFeatsTrain(Dataset):
-    self.wnid_cnt = [0 for i in range(1000)]
-    self.shuffleCnt = [0 for i in range(1000)]
-    self.wnid_feats_list = {}
+    wnid_cnt = [0 for i in range(1000)]
+    shuffleCnt = [0 for i in range(1000)]
+    wnid_feats_list = {}
     def __init__(self, path, train_wnids): # imagenet_feats
         self.path = path
         self.wnid_list = train_wnids #os.listdir(self.path)
