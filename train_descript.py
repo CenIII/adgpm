@@ -16,6 +16,7 @@ import tqdm
 from torch.utils.data import DataLoader
 import os
 import argparse
+import random
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
