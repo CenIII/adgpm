@@ -108,9 +108,9 @@ class ImageNetFeatsTrain(Dataset):
     def getShuffleCnt(self):
         return self.shuffleCnt
 
-    def getMaxWnidCnt(self);
+    def getMaxWnidCnt(self):
         return max(self.wnid_cnt)
-        
+
     def removeEmptyInds(self,wnid_feats_list):
         emptyWnidList = []
         preserveList = []
