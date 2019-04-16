@@ -80,7 +80,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list[i] = os.path.join(wnid_path,npy_list[i])
             self.wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
-        self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
+        self.wnid_cnt = [0 for i in range(len(self.wnid_list))]
         self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
 
         # print('dump done.')
@@ -107,6 +107,9 @@ class ImageNetFeatsTrain(Dataset):
 
     def getShuffleCnt(self):
         return self.shuffleCnt
+
+    def getMaxWnidCnt(self);
+        return max(self.wnid_cnt)
         
     def removeEmptyInds(self,wnid_feats_list):
         emptyWnidList = []
