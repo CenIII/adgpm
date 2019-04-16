@@ -56,7 +56,9 @@ def softmax(X, theta = 1.0, axis = None):
     return p
 
 class ImageNetFeatsTrain(Dataset):
-
+    self.wnid_cnt = [0 for i in range(1000)]
+    self.shuffleCnt = [0 for i in range(1000)]
+    self.wnid_feats_list = {}
     def __init__(self, path, train_wnids): # imagenet_feats
         self.path = path
         self.wnid_list = train_wnids #os.listdir(self.path)
@@ -65,7 +67,7 @@ class ImageNetFeatsTrain(Dataset):
         # with open('./save/npyfile_list.pkl','rb') as f:
         #     self.npyfile_list = pickle.load(f)
         
-        self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
+        # self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
         # with open('./materials/npyfile_list.pkl','rb') as f:
         #     self.wnid_feats_list = pickle.load(f)
 
@@ -80,8 +82,7 @@ class ImageNetFeatsTrain(Dataset):
                 npy_list[i] = os.path.join(wnid_path,npy_list[i])
             self.wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
-        self.wnid_cnt = [0 for i in range(len(self.wnid_list))]
-        self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
+        
 
         # print('dump done.')
         # load A_pred_0
