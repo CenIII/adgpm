@@ -81,7 +81,7 @@ class ImageNetFeatsTrain(Dataset):
             self.wnid_feats_list[j] = npy_list  
         # presList = self.removeEmptyInds(self.wnid_feats_list)
         self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
-
+        self.shuffleCnt = [0 for i in range(len(self.wnid_list))]
 
         # print('dump done.')
         # load A_pred_0
@@ -105,6 +105,9 @@ class ImageNetFeatsTrain(Dataset):
             self.desc_encoded[i] = encoded_desc[desc_wnid2ind[wnid]]
             self.desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
 
+    def getShuffleCnt(self):
+        return self.shuffleCnt
+        
     def removeEmptyInds(self,wnid_feats_list):
         emptyWnidList = []
         preserveList = []
@@ -168,8 +171,7 @@ class ImageNetFeatsTrain(Dataset):
             cnt = cnt+1
             if cnt >= len(npylist):
                 random.shuffle(self.wnid_feats_list[ind])
-                if ind==10:
-                    print('ind 10 is shuffling')
+                self.shuffleCnt[ind] += 1
                 cnt = 0
         self.wnid_cnt[ind] = cnt
         return npy

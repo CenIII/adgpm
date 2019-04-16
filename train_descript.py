@@ -134,7 +134,7 @@ if __name__ == '__main__':
 				optimizer.step()
 
 				loss_data = loss.data.cpu().numpy()
-				qdar.set_postfix(loss=str(np.round(loss_data,3)))
+				qdar.set_postfix(loss=str(np.round(loss_data,3)),shuffleCnt=np.sum(loader.dataset.getShuffleCnt()))
 				ep_loss += loss_data
 				if(batch_id>0 and batch_id%500==0):
 					saveStateDict(lstmEnc,args.save_path)
