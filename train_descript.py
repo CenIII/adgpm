@@ -61,6 +61,8 @@ def parseArgs():
 		default='./save/default/')
 	parser.add_argument('-b','--batch_imgs',
 		default=4, type=int)
+	parser.add_argument('-i','--ind',
+		default=100, type=int)
 	args = parser.parse_args()
 	return args
 
@@ -142,7 +144,7 @@ if __name__ == '__main__':
 			saveStateDict(lstmEnc,args.save_path)
 	else:
 		lstmEnc = reloadModel(args.model_path, lstmEnc)
-		feat,text,length = makeInp(*dataset.getOnePair())
+		feat,text,length = makeInp(*dataset.getOnePair(args.ind))
 		print(dataset.decodeText(text))
 		out2 = lstmEnc(text,input_lengths=length)
 		loss = crit.output_att(feat,out2,length)
