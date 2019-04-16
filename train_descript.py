@@ -70,20 +70,20 @@ if __name__ == '__main__':
 	                 input_dropout_p=0, dropout_p=0,
 	                 n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
 	                 embedding_parameter=wordembs, update_embedding=False).to(device)
-	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0002)
+	optimizer = torch.optim.Adam(list(filter(lambda p: p.requires_grad, lstmEnc.parameters())), 0.0005)
 	# todo: crit
 	crit = SimilarityLoss(0.5,0.5,1).to(device)
 	# todo: loader
 	dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
 	loader = DataLoader(dataset=dataset, batch_size=1,
-						shuffle=True, num_workers=1)
+						shuffle=True, num_workers=2)
 
-	for epoch in range(1, 30):
-		qdar = tqdm.tqdm(enumerate(loader, 1),
-									total=len(loader),
-									ascii=True)
+	for epoch in range(1, 100):
+		ld = iter(loader)
+		qdar = tqdm.tqdm(range(len(loader)),total=len(loader),ascii=True)
 		ep_loss = 0
-		for batch_id, batch in qdar:
+		for batch_id in qdar:
+			batch = next(ld)
 			feats, texts, lengths = makeInp(*batch)   # feats: (numClasses, imPerClass, 2048, 1, 1) , texts: (numClasses, maxLens), lengths
 			
 			out2 = lstmEnc(texts,input_lengths=lengths)

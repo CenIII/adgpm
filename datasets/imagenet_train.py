@@ -88,7 +88,7 @@ class ImageNetFeatsTrain(Dataset):
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
         # A_pred = A_pred[presList,:][:,presList]
         np.fill_diagonal(A_pred, 0.)
-        self.probMat = softmax(A_pred,theta=1.0,axis=1)
+        self.probMat = softmax(A_pred,theta=2.0,axis=1)
         with open('./materials/desc_enc.pkl','rb') as f:
             descEnc = pickle.load(f)
 
@@ -147,14 +147,16 @@ class ImageNetFeatsTrain(Dataset):
     def sampleFeatsforOneWnid(self,ind):
         cnt = self.wnid_cnt[ind]
         npylist = self.wnid_feats_list[ind]
-        npy = np.zeros([5,2049,1,1])
-        for i in range(5):
+        npy = np.zeros([8,2049,1,1])
+        for i in range(8):
             if cnt >= len(npylist):
                 print('cnt: '+str(cnt)+' len npylist: '+str(len(npylist))+' wnid: '+str(self.wnid_list[ind]))
             npy[i,:,0,0] = np.load(npylist[cnt])
             cnt = cnt+1
             if cnt >= len(npylist):
                 random.shuffle(self.wnid_feats_list[ind])
+                if ind==10:
+                    print('ind 10 is shuffling')
                 cnt = 0
         self.wnid_cnt[ind] = cnt
         return npy
@@ -165,7 +167,7 @@ class ImageNetFeatsTrain(Dataset):
     def __getitem__(self, idx):
         # for idx class (1~1000), find by A_pred_0 probability 30 classes, draw 5 feats from each class, reshape it to (30,5,2048,1,1)
         # sample 30 classes by self.A_pred
-        npy = np.zeros([30,5,2049,1,1])
+        npy = np.zeros([30,8,2049,1,1])
         labels = np.zeros([30,self.maxLen])
         lengths = np.zeros(30)
         classids = self.sampleClasses(idx)
@@ -182,7 +184,6 @@ class ImageNetFeatsTrain(Dataset):
         npy = npy[inds]
         labels = labels[inds]
         lengths = lengths[inds]
-
         return npy, labels, lengths
 
 
