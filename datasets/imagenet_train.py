@@ -147,6 +147,9 @@ class ImageNetFeatsTrain(Dataset):
         length = np.zeros(1)
         label[0] = self.desc_encoded[ind]
         length[0] = self.desc_lengths[ind]
+        npy = torch.FloatTensor(npy)
+        label = torch.LongTensor(label)
+        length = torch.LongTensor(length)
         return npy, label, length
 
     def sampleClasses(self,ind):
