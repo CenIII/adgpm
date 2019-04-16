@@ -65,7 +65,7 @@ class ImageNetFeatsTrain(Dataset):
         # with open('./save/npyfile_list.pkl','rb') as f:
         #     self.npyfile_list = pickle.load(f)
         
-        # self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
+        self.wnid_feats_list = {i:[] for i in range(len(self.wnid_list))}
         # with open('./materials/npyfile_list.pkl','rb') as f:
         #     self.wnid_feats_list = pickle.load(f)
 
@@ -79,14 +79,14 @@ class ImageNetFeatsTrain(Dataset):
             for i in range(len(npy_list)):
                 npy_list[i] = os.path.join(wnid_path,npy_list[i])
             self.wnid_feats_list[j] = npy_list  
-        presList = self.removeEmptyInds(self.wnid_feats_list)
+        # presList = self.removeEmptyInds(self.wnid_feats_list)
         self.wnid_cnt = {i:0 for i in range(len(self.wnid_list))}
 
 
         # print('dump done.')
         # load A_pred_0
         A_pred = torch.load('./materials/A_pred_0.pt').cpu().detach().numpy()[:1000,:1000]
-        A_pred = A_pred[presList,:][:,presList]
+        # A_pred = A_pred[presList,:][:,presList]
         np.fill_diagonal(A_pred, 0.)
         self.probMat = softmax(A_pred,theta=1.0,axis=1)
         with open('./materials/desc_enc.pkl','rb') as f:
