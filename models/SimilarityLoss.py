@@ -128,7 +128,7 @@ class SimilarityLoss(nn.Module):
         sd_tmp = []
         prev = 0
         for idx in lenAry:
-            sd_tmp.append(F.softmax(s_nt_2[:,:,prev:idx]),dim=2)#torch.sum(sd[:,:,prev:idx],dim=2).unsqueeze(2).repeat(1,1,idx-prev))
+            sd_tmp.append(F.softmax(s_nt_2[:,:,prev:idx],dim=2))#torch.sum(sd[:,:,prev:idx],dim=2).unsqueeze(2).repeat(1,1,idx-prev))
             prev = idx
         beta = torch.cat(sd_tmp,dim=2) # B x M x Tb
 
