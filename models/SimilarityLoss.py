@@ -120,25 +120,28 @@ class SimilarityLoss(nn.Module):
 
         # step 1: reshape s  (B x M x H_r x W_r) x Tb -> B x M x (H x W) x Tb
         #s_nt_2 = F.softmax(s.view(B,-1,Tb),dim=1)
-        s_nt_2 = s.view(B, M , -1, Tb) # B x M x (H x W) x Tb
+        s_nt_2 = s.view(B, M , Tb) # B x M x (H x W) x Tb
         
         # step 2: generate s_d as denominator B x M x B
-        s_exp = torch.exp(s_nt_2)
-        sd = torch.sum(s_exp, dim=2)
+        # s_exp = torch.exp(s_nt_2)
+        # sd = torch.sum(s_exp, dim=2)
         sd_tmp = []
         prev = 0
         for idx in lenAry:
-            sd_tmp.append(torch.sum(sd[:,:,prev:idx],dim=2).unsqueeze(2).repeat(1,1,idx-prev))
+            sd_tmp.append(F.softmax(s_nt_2[:,:,prev:idx]),dim=2)#torch.sum(sd[:,:,prev:idx],dim=2).unsqueeze(2).repeat(1,1,idx-prev))
             prev = idx
-        sd = torch.cat(sd_tmp,dim=2) # B x M x Tb
+        beta = torch.cat(sd_tmp,dim=2) # B x M x Tb
 
         # step 3: compute beta B x M x Tb
-        sd_rep = sd.unsqueeze(2).repeat(1,1,(H_r*H_w),1) # B x M x (H x W) x Tb
-        beta = torch.sum(s_exp/sd_rep,dim=2) # B x M x Tb 
+        # sd_rep = sd.unsqueeze(2).repeat(1,1,(H_r*H_w),1) # B x M x (H x W) x Tb
+        
+
+        # beta = torch.sum(s_exp/sd_rep,dim=2) # B x M x Tb 
         if output_att:
             print(beta)
         # step 4: compute em_prime B x M x B x D
         beta = beta.view(-1, Tb)
+
         em_temp = []
         prev = 0
         for idx in lenAry:
