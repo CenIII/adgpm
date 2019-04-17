@@ -15,6 +15,9 @@ from models.LSTMEncoder import EncoderRNN
 import pickle
 import numpy as np
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+
 def getLSTMOuts(test_wnids,lstmEnc):
     with open('./materials/desc_enc.pkl','rb') as f:
         descEnc = pickle.load(f)
@@ -33,8 +36,8 @@ def getLSTMOuts(test_wnids,lstmEnc):
     desc_encoded = torch.LongTensor(desc_encoded)
     desc_lengths = torch.LongTensor(desc_lengths).squeeze()
     inds = torch.argsort(-desc_lengths)
-    desc_encoded = desc_encoded[inds].cuda()
-    desc_lengths = desc_lengths[inds].cuda()
+    desc_encoded = desc_encoded[inds].to(device)
+    desc_lengths = desc_lengths[inds].to(device)
     lstmEnc.eval()
     outs = []
     for i in range(int(len(test_wnids)/32)+1):
@@ -64,7 +67,7 @@ def reloadModel(model_path,lstmEnc):
 def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
                    consider_trains,lstmOuts=None,lstmLens=None,crit=None,rerankNum=10):
     top = [1, 2, 5, 10, 20]
-    hits = torch.zeros(len(top)).cuda()
+    hits = torch.zeros(len(top)).to(device)
     tot = 0
 
     # loader = DataLoader(dataset=dataset, batch_size=32,
@@ -72,10 +75,10 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
 
     # for batch_id, batch in enumerate(loader, 1):
         # data, label = batch 
-    data = dataset.cuda()
+    data = dataset.to(device)
 
     feat = data #cnn(data) # (batch_size, d)
-    # feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).cuda()], dim=1)
+    # feat = torch.cat([feat, torch.ones(len(feat)).view(-1, 1).to(device)], dim=1)
 
     fcs = pred_vectors.t()
 
@@ -142,16 +145,16 @@ if __name__ == '__main__':
     pred_wnids = pred_file['wnids']
     pred_vectors = pred_file['pred']
     pred_dic = dict(zip(pred_wnids, pred_vectors))
-    pred_vectors = pick_vectors(pred_dic, train_wnids + test_wnids, is_tensor=True).cuda()
+    pred_vectors = pick_vectors(pred_dic, train_wnids + test_wnids, is_tensor=True).to(device)
 
-    pred_vectors = pred_vectors.cuda()
+    pred_vectors = pred_vectors.to(device)
 
     n = len(train_wnids)
     m = len(test_wnids)
     
     cnn = make_resnet50_base()
     cnn.load_state_dict(torch.load(args.cnn))
-    cnn = cnn.cuda()
+    cnn = cnn.to(device)
     cnn.eval()
 
     TEST_TRAIN = args.test_train
@@ -160,7 +163,7 @@ if __name__ == '__main__':
     dataset = ImageNetFeats(imagenet_path)
     dataset.set_keep_ratio(args.keep_ratio)
 
-    s_hits = torch.FloatTensor([0, 0, 0, 0, 0]).cuda() # top 1 2 5 10 20
+    s_hits = torch.FloatTensor([0, 0, 0, 0, 0]).to(device) # top 1 2 5 10 20
     s_tot = 0
 
     results = {}
@@ -189,12 +192,12 @@ if __name__ == '__main__':
         lstmEnc = EncoderRNN(len(wordembs), 82, 1024, 300,
                      input_dropout_p=0, dropout_p=0,
                      n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
-                     embedding_parameter=wordembs, update_embedding=False).cuda()
+                     embedding_parameter=wordembs, update_embedding=False).to(device)
         lstmEnc = reloadModel(args.model_path, lstmEnc)
 
         lstmOuts, lstmLens = getLSTMOuts(test_wnids,lstmEnc)
         
-        crit = SimilarityLoss(0.5,0.5,1).cuda()
+        crit = SimilarityLoss(0.5,0.5,1).to(device)
 
         for i, wnid in enumerate(test_wnids, 1):
             subset = dataset.get_subset(wnid)
