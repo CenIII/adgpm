@@ -112,6 +112,13 @@ if __name__ == '__main__':
 	# todo: loader
 	dataset = ImageNetFeatsTrain('./materials/datasets/imagenet_feats/', train_wnids)
 	
+
+	def doOneEval(ind):
+		feat,text,length = makeInp(*dataset.getOnePair(ind))
+		print(decodeText(text,ind2word)[:length[0]])
+		out2 = lstmEnc(text,input_lengths=length)
+		loss = crit.output_att(feat,out2,length)
+
 	if not args.evaluate_mode:
 		loader = DataLoader(dataset=dataset, batch_size=1,
 							shuffle=True, num_workers=4)
@@ -143,9 +150,7 @@ if __name__ == '__main__':
 			saveStateDict(lstmEnc,args.save_path)
 	else:
 		lstmEnc = reloadModel(args.model_path, lstmEnc)
-		feat,text,length = makeInp(*dataset.getOnePair(args.ind))
-		print(decodeText(text,ind2word))
-		out2 = lstmEnc(text,input_lengths=length)
-		loss = crit.output_att(feat,out2,length)
+
+		doOneEval(args.ind)
 
 
