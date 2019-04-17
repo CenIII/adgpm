@@ -35,7 +35,11 @@ def getLSTMOuts(test_wnids,lstmEnc):
     inds = torch.argsort(-desc_lengths)
     desc_encoded = desc_encoded[inds].cuda()
     desc_lengths = desc_lengths[inds].cuda()
-    outs = lstmEnc(desc_encoded,input_lengths=desc_lengths)
+    lstmEnc.eval()
+    outs = []
+    for i in range(int(len(test_wnids)/32)+1):
+        outs.append(lstmEnc(desc_encoded[32*i:32*(i+1)],input_lengths=desc_lengths[32*i:32*(i+1)]))
+    outs = torch.cat(outs,dim=0)
     return outs, desc_lengths
 
 def reloadModel(model_path,lstmEnc):
