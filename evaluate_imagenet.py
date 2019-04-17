@@ -97,7 +97,7 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
         for ind in topkInds:
             t_hiddens = lstmOuts[ind]
             t_lens = lstmLens[ind]
-            table[i][ind] = crit.generate_similarity_matrix(feat[i].view(1,1,-1,1,1),t_hiddens.view(1,-1),t_lens.view(1,-1))
+            table[i][ind] = crit.generate_similarity_matrix(feat[i].view(1,1,-1,1,1),t_hiddens.unsqueeze(0),t_lens.view(-1))
 
 
     gth_score = table[:, all_label].repeat(table.shape[1], 1).t()
