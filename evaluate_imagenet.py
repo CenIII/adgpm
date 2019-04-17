@@ -11,7 +11,7 @@ from datasets.imagenet import ImageNetFeats
 from utils import set_gpu, pick_vectors
 
 from models.SimilarityLoss import SimilarityLoss
-
+from models.LSTMEncoder import EncoderRNN
 
 def getLSTMOuts(test_wnids,lstmEnc):
     with open('./materials/desc_enc.pkl','rb') as f:
