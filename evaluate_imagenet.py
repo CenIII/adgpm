@@ -95,8 +95,8 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
         # 计算新的10个分数，+1e18
         topkScrs = []
         for ind in topkInds:
-            t_hiddens = lstmOuts[ind]
-            t_lens = lstmLens[ind]
+            t_hiddens = lstmOuts[ind-1000]
+            t_lens = lstmLens[ind-1000]
             table[i][ind] = crit.generate_similarity_matrix(feat[i].view(1,1,-1,1,1),t_hiddens.unsqueeze(0),t_lens.view(-1))+100000
 
 
