@@ -12,6 +12,8 @@ from utils import set_gpu, pick_vectors
 
 from models.SimilarityLoss import SimilarityLoss
 from models.LSTMEncoder import EncoderRNN
+import pickle
+import numpy as np
 
 def getLSTMOuts(test_wnids,lstmEnc):
     with open('./materials/desc_enc.pkl','rb') as f:
@@ -24,18 +26,36 @@ def getLSTMOuts(test_wnids,lstmEnc):
     _, maxLen = encoded_desc.shape
     desc_encoded = np.zeros([len(test_wnids),maxLen])
     desc_lengths = np.zeros(len(test_wnids))
-    for i in range(len(self.wnid_list)):
+    for i in range(len(test_wnids)):
         wnid = test_wnids[i]
         desc_encoded[i] = encoded_desc[desc_wnid2ind[wnid]]
         desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
     desc_encoded = torch.LongTensor(desc_encoded)
     desc_lengths = torch.LongTensor(desc_lengths).squeeze()
     inds = torch.argsort(-desc_lengths)
-    desc_encoded = desc_encoded[inds]
-    desc_lengths = desc_lengths[inds]
-    outs = lstmEnc(desc_encoded,desc_lengths)
+    desc_encoded = desc_encoded[inds].cuda()
+    desc_lengths = desc_lengths[inds].cuda()
+    outs = lstmEnc(desc_encoded,input_lengths=desc_lengths)
     return outs, desc_lengths
 
+def reloadModel(model_path,lstmEnc):
+	pt = torch.load(model_path)
+
+	def subload(model,pt_dict):
+		model_dict = model.state_dict()
+		pretrained_dict = {}
+		for k, v in pt_dict.items():
+			if(k in model_dict):
+				pretrained_dict[k] = v
+		# 2. overwrite entries in the existing state dict
+		model_dict.update(pretrained_dict)
+		# 3. load the new state dict
+		model.load_state_dict(model_dict)
+		return model
+
+	lstmEnc = subload(lstmEnc,pt)
+	
+	return lstmEnc
 
 def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
                    consider_trains,lstmOuts=None,lstmLens=None,crit=None,rerankNum=10):
@@ -158,6 +178,10 @@ if __name__ == '__main__':
             print('x{}({})'.format(tot, s_tot))
     else:
         count = 0
+        with open('./materials/desc_vocabs.pkl','rb') as f:
+            vocab = pickle.load(f)
+        wordembs = vocab['word_embs']
+
         lstmEnc = EncoderRNN(len(wordembs), 82, 1024, 300,
                      input_dropout_p=0, dropout_p=0,
                      n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
