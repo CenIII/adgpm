@@ -10,9 +10,35 @@ from models.resnet import make_resnet50_base
 from datasets.imagenet import ImageNetFeats
 from utils import set_gpu, pick_vectors
 
+from models.SimilarityLoss import SimilarityLoss
+
+
+def getLSTMOuts(test_wnids,lstmEnc):
+    with open('./materials/desc_enc.pkl','rb') as f:
+        descEnc = pickle.load(f)
+
+    desc_wnid2ind = descEnc['wnid2ind']
+    encoded_desc = descEnc['encoded_desc']
+    lengths = descEnc['lengths']
+
+    _, maxLen = encoded_desc.shape
+    desc_encoded = np.zeros([len(test_wnids),maxLen])
+    desc_lengths = np.zeros(len(test_wnids))
+    for i in range(len(self.wnid_list)):
+        wnid = test_wnids[i]
+        desc_encoded[i] = encoded_desc[desc_wnid2ind[wnid]]
+        desc_lengths[i] = lengths[desc_wnid2ind[wnid]]
+    desc_encoded = torch.LongTensor(desc_encoded)
+    desc_lengths = torch.LongTensor(desc_lengths).squeeze()
+    inds = torch.argsort(-desc_lengths)
+    desc_encoded = desc_encoded[inds]
+    desc_lengths = desc_lengths[inds]
+    outs = lstmEnc(desc_encoded,desc_lengths)
+    return outs, desc_lengths
+
 
 def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
-                   consider_trains):
+                   consider_trains,lstmOuts=None,lstmLens=None,crit=None,rerankNum=10):
     top = [1, 2, 5, 10, 20]
     hits = torch.zeros(len(top)).cuda()
     tot = 0
@@ -32,6 +58,20 @@ def test_on_subset(dataset, cnn, n, pred_vectors, all_label,
     table = torch.matmul(feat, fcs)
     if not consider_trains:
         table[:, :n] = -1e18
+
+
+    # foor loop 每行，每行取前10个score的inds
+    for i in range(len(table)):
+        # 提取10个inds的lstm hiddens
+        scores = table[i]
+        topkInds = torch.topk(scores,rerankNum)[1]
+        # 计算新的10个分数，+1e18
+        topkScrs = []
+        for ind in topkInds:
+            t_hiddens = lstmOuts[ind]
+            t_lens = lstmLens[ind]
+            table[i][ind] = crit.generate_similarity_matrix(feat,t_hiddens,t_lens)
+
 
     gth_score = table[:, all_label].repeat(table.shape[1], 1).t()
     rks = (table >= gth_score).sum(dim=1)
@@ -59,6 +99,8 @@ if __name__ == '__main__':
     parser.add_argument('--keep-ratio', type=float, default=1)
     parser.add_argument('--consider-trains', action='store_true')
     parser.add_argument('--test-train', action='store_true')
+    parser.add_argument('-p','--model_path',
+        default='./lstmEnc.pt')
 
     args = parser.parse_args()
 
@@ -116,10 +158,20 @@ if __name__ == '__main__':
             print('x{}({})'.format(tot, s_tot))
     else:
         count = 0
+        lstmEnc = EncoderRNN(len(wordembs), 82, 1024, 300,
+                     input_dropout_p=0, dropout_p=0,
+                     n_layers=1, bidirectional=False, rnn_cell='lstm', variable_lengths=True,
+                     embedding_parameter=wordembs, update_embedding=False).cuda()
+        lstmEnc = reloadModel(args.model_path, lstmEnc)
+
+        lstmOuts, lstmLens = getLSTMOuts(test_wnids,lstmEnc)
+        
+        crit = SimilarityLoss(0.5,0.5,1).cuda()
+
         for i, wnid in enumerate(test_wnids, 1):
             subset = dataset.get_subset(wnid)
             hits, tot = test_on_subset(subset, cnn, n, pred_vectors, n + i - 1,
-                                       consider_trains=args.consider_trains)
+                                       consider_trains=args.consider_trains,lstmOuts=lstmOuts,lstmLens=lstmLens,crit=crit)
             results[wnid] = (hits / tot).tolist()
 
             s_hits += hits
